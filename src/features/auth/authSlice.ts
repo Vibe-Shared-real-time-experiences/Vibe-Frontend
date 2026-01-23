@@ -1,19 +1,19 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { login, register } from "./authThunk";
-import type { LoginResponse, RegisterResponse } from "../../types/auth";
+import type { LoginResponse, RegisterResponse, UserBaseInfo } from "../../types/auth";
 
 interface AuthState {
-    userId: string | null;
-    token: string | null;
-    refreshToken: string | null;
+    user: UserBaseInfo | null;
+    isLoading: boolean;
     isAuthenticated: boolean;
+    error: string | null;
 }
 
 const initialState: AuthState = {
-    userId: null,
-    token: null,
-    refreshToken: null,
+    user: {} as UserBaseInfo,
+    isLoading: false,
     isAuthenticated: false,
+    error: null,
 };
 
 export const authSlice = createSlice({
@@ -25,28 +25,42 @@ export const authSlice = createSlice({
         builder.addCase(login.fulfilled, (state, action: PayloadAction<LoginResponse>) => {
             // Handle successful login
             state.isAuthenticated = true;
-            state.token = action.payload.token;
-            state.refreshToken = action.payload.refreshToken;
+            state.isLoading = false;
+
+            state.user = action.payload.user;
+            state.error = null;
+
+            localStorage.setItem("token", action.payload.token);
+            localStorage.setItem("refreshToken", action.payload.refreshToken);
         });
-        builder.addCase(login.rejected, (state) => {
+        builder.addCase(login.rejected, (state, action) => {
             // Handle failed login
             state.isAuthenticated = false;
-            state.token = null;
-            state.refreshToken = null;
+            state.isLoading = false;
+
+            state.user = null
+            state.error = action.payload || "Login failed";
         });
 
         // REGISTER
         builder.addCase(register.fulfilled, (state, action: PayloadAction<RegisterResponse>) => {
             // Handle successful registration
             state.isAuthenticated = true;
-            state.token = action.payload.token;
-            state.refreshToken = action.payload.refreshToken;
+            state.isLoading = false;
+
+            state.user = action.payload.user;
+            state.error = null;
+
+            localStorage.setItem("token", action.payload.token);
+            localStorage.setItem("refreshToken", action.payload.refreshToken);
         })
-        builder.addCase(register.rejected, (state) => {
+        builder.addCase(register.rejected, (state, action) => {
             // Handle failed registration
             state.isAuthenticated = false;
-            state.token = null;
-            state.refreshToken = null;
+            state.isLoading = false;
+
+            state.user = null;
+            state.error = action.payload || "Registration failed";
         });
     }
 });

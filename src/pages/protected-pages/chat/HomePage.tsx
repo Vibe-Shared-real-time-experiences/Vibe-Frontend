@@ -3,8 +3,6 @@ import { MessageSquare } from 'lucide-react';
 
 export default function HomePage() {
 
-
-
     return (
         <div className="flex-1 bg-[#313338] flex flex-col items-center justify-center text-center relative p-4">
             {/* Search bar */}

@@ -5,8 +5,6 @@ const PublicRoute = () => {
 
     const { isAuthenticated } = useAppSelector((state) => state.auth);
 
-    console.log("authenticate: " + isAuthenticated);
-
     if (isAuthenticated) {
         return <Navigate to="/home" replace />;
     }
