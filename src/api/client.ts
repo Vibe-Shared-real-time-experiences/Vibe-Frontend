@@ -73,12 +73,11 @@ axiosClient.interceptors.response.use(
                     refreshToken: refreshToken
                 });
 
-                const { accessToken, refreshToken: newRefreshToken } = response.data;
+                const accessToken = response.data.data.accessToken;
+                const newRefreshToken = response.data.data.refreshToken;
 
                 localStorage.setItem('access_token', accessToken);
-                if (newRefreshToken) {
-                    localStorage.setItem('refresh_token', newRefreshToken);
-                }
+                localStorage.setItem('refresh_token', newRefreshToken);
 
                 // 3. Update header with new token
                 axiosClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
@@ -89,10 +88,13 @@ axiosClient.interceptors.response.use(
 
                 return axiosClient(originalRequest);
             } catch (refreshError) {
+                console.error('Token refresh failed:', refreshError);
+
                 // 5. Refresh failed (Token expired or revoked) -> Logout
                 processQueue(refreshError, null);
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
+                localStorage.removeItem('persist:root');
 
                 // Redirect to login page (Use window.location to force reload for clean state)
                 window.location.href = '/login';
