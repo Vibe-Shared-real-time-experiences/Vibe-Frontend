@@ -5,7 +5,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-    token: string;
+    accessToken: string;
     refreshToken: string;
     user: UserBaseInfo;
 }
@@ -26,7 +26,7 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-    token: string;
+    accessToken: string;
     refreshToken: string;
     user: UserBaseInfo;
 }

@@ -3,6 +3,8 @@ import storage from 'redux-persist/lib/storage';
 import authReducer from "./auth/authSlice";
 import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from "redux-persist";
 import persistReducer from "redux-persist/es/persistReducer";
+import { serverReducer } from "./chat/serverSlice";
+import { channelReducer } from "./chat/channelSlice";
 
 const persistConfig = {
     key: "root",
@@ -12,6 +14,8 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
     auth: authReducer,
+    server: serverReducer,
+    channel: channelReducer,
 });
 
 

@@ -30,8 +30,8 @@ export const authSlice = createSlice({
             state.user = action.payload.user;
             state.error = null;
 
-            localStorage.setItem("token", action.payload.token);
-            localStorage.setItem("refreshToken", action.payload.refreshToken);
+            localStorage.setItem("access_token", action.payload.accessToken);
+            localStorage.setItem("refresh_token", action.payload.refreshToken);
         });
         builder.addCase(login.rejected, (state, action) => {
             // Handle failed login
@@ -51,8 +51,8 @@ export const authSlice = createSlice({
             state.user = action.payload.user;
             state.error = null;
 
-            localStorage.setItem("token", action.payload.token);
-            localStorage.setItem("refreshToken", action.payload.refreshToken);
+            localStorage.setItem("access_token", action.payload.accessToken);
+            localStorage.setItem("refresh_token", action.payload.refreshToken);
         })
         builder.addCase(register.rejected, (state, action) => {
             // Handle failed registration
