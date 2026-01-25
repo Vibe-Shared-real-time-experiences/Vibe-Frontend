@@ -5,6 +5,8 @@ import { FLUSH, PAUSE, PERSIST, persistStore, PURGE, REGISTER, REHYDRATE } from 
 import persistReducer from "redux-persist/es/persistReducer";
 import { serverReducer } from "./chat/serverSlice";
 import { channelReducer } from "./chat/channelSlice";
+import memberReducer from "./chat/memberSlice";
+import messageReducer from "./chat/messageSlice";
 
 const persistConfig = {
     key: "root",
@@ -16,6 +18,8 @@ const rootReducer = combineReducers({
     auth: authReducer,
     server: serverReducer,
     channel: channelReducer,
+    message: messageReducer,
+    member: memberReducer
 });
 
 

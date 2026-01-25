@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, use, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { X, Camera } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../features/hooks';
-import { createServer } from '../features/chat/serverThunk';
-import type { CreateServerRequest } from '../types/chat/server';
+import { useAppDispatch } from '../../features/hooks';
+import { createServer } from '../../features/chat/serverThunk';
+import type { CreateServerRequest } from '../../types/chat/server';
 import { useNavigate } from 'react-router-dom';
-import { setServerData } from '../features/chat/channelSlice';
-import { flatChannelFormCategories } from '../utils/channelUtil';
+import { setServerData } from '../../features/chat/channelSlice';
+import { flatChannelFormCategories } from '../../utils/channelUtil';
 
 interface CreateServerFormProps {
     onClose: () => void;
@@ -69,9 +69,9 @@ const CreateServerForm = ({ onClose }: CreateServerFormProps) => {
         setIsLoading(true);
         try {
             const newServer = await dispatch(createServer(formData)).unwrap();
-            dispatch(setServerData(newServer.categories));
+            dispatch(setServerData(newServer));
 
-            const { activeChannelId } = flatChannelFormCategories(newServer.categories);
+            const { activeChannelId } = flatChannelFormCategories(newServer);
 
             if (activeChannelId) {
                 navigate(`/channels/${newServer.id}/${activeChannelId}`);

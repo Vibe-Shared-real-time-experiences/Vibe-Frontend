@@ -7,8 +7,7 @@ export const getServers = createAsyncThunk<ServerResponse[], void, { rejectValue
     "chat/getServers",
     async (_, thunkApi) => {
         try {
-            // Placeholder for actual service call
-            const response = await serverService.getServers();
+            const response = await serverService.fetchServers();
             return response.data.data;
         } catch (error: unknown) {
             return thunkApi.rejectWithValue("Fetching servers failed" + error);
@@ -16,12 +15,11 @@ export const getServers = createAsyncThunk<ServerResponse[], void, { rejectValue
     }
 )
 
-export const getServerById = createAsyncThunk<ServerResponse, string, { rejectValue: string }>(
+export const getServerById = createAsyncThunk<ServerDetailResponse, string, { rejectValue: string }>(
     "chat/getServerById",
     async (serverId: string, thunkApi) => {
         try {
-            // Placeholder for actual service call
-            const response = await serverService.getServerById(serverId);
+            const response = await serverService.fetchServerById(serverId);
             return response.data.data;
         } catch (error: unknown) {
             return thunkApi.rejectWithValue("Fetching server by ID failed" + error);

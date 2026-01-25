@@ -5,6 +5,8 @@ import DashboardLayout from "../components/layouts/DashBroadLayout";
 import RegisterPage from "../pages/public-pages/auth/RegisterPage";
 import PublicRoute from "../pages/public-pages/PublicRoute";
 import ProtectedRoute from "../pages/protected-pages/ProtectedRoute";
+import DMChannelPage from "../pages/protected-pages/chat/DMChannelPage";
+import ChannelPage from "../pages/protected-pages/chat/ChannelPage";
 
 export const router = createBrowserRouter([
 
@@ -19,11 +21,11 @@ export const router = createBrowserRouter([
         element: <Navigate to="/login" replace />,
       },
       {
-        path: "/login",
+        path: "login",
         element: <LoginPage />,
       },
       {
-        path: "/register",
+        path: "register",
         element: <RegisterPage />,
       },
     ]
@@ -33,12 +35,26 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/home",
+        path: "/channels",
         element: <DashboardLayout />,
         children: [
           {
             index: true,
             element: <HomePage />,
+          },
+          {
+            path: "@me",
+            element: <HomePage />,
+            children: [
+              {
+                path: ":dmChannelId",
+                element: <DMChannelPage />
+              }
+            ]
+          },
+          {
+            path: ":serverId/:channelId",
+            element: <ChannelPage />,
           }
         ]
       },

@@ -1,6 +1,6 @@
 // src/components/layout/DashboardLayout.tsx
 import { Outlet } from 'react-router-dom';
-import ServerSidebar from '../ServerSideBar';
+import ServerSidebar from '../chat/ServerSideBar';
 
 export default function DashboardLayout() {
     return (
