@@ -1,16 +1,18 @@
-import { Bell, Hash, Plus, Users } from 'lucide-react'
+
 import MemberList from './MemberList'
 import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../../features/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
-import { fetchMessagesByChannelId } from '../../features/chat/messageThunk';
+import { fetchMessagesByChannelId } from '../../../../../features/chat/messageThunk';
+import ChannelChatHeader from './ChannelChatHeader';
+import { Plus } from 'lucide-react';
 
 const ChannelChatArea = () => {
 
     const { channelId, serverId } = useParams();
 
     const dispatch = useAppDispatch();
-    const { messagesByChannelId, isLoading } = useAppSelector((state) => state.message);
+    const { messagesByChannelId } = useAppSelector((state) => state.message);
     const { channelMembers } = useAppSelector((state) => state.member);
 
     useEffect(() => {
@@ -21,26 +23,11 @@ const ChannelChatArea = () => {
 
     const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
-    if (isLoading) {
-        return <div className="flex items-center justify-center h-full text-white">Loading...</div>;
-    }
-
     return (
         <>
             <div className="flex-1 flex flex-col bg-[#313338] min-w-0 relative" >
                 {/* Chat Header */}
-                <div className="h-12 border-b border-[#26272D] flex items-center px-4 justify-between shadow-sm z-10" >
-                    <div className="flex items-center text-white">
-                        <Hash size={24} className="text-gray-400 mr-2" />
-                        <span className="font-bold mr-4">general</span>
-                        <span className="text-xs text-gray-400 border-l border-gray-600 pl-4">The main lounge</span>
-                    </div>
-                    <div className="flex items-center gap-4 text-gray-300">
-                        <Bell size={20} className="cursor-pointer hover:text-white" />
-                        <Users size={20} className="cursor-pointer hover:text-white" onClick={() => setIsMemberListOpen(!isMemberListOpen)} />
-                        <div className="w-64 bg-[#1E1F22] rounded px-2 py-1 text-sm text-gray-400 hidden lg:block">Search...</div>
-                    </div>
-                </div>
+                <ChannelChatHeader title={channelId ? `#${channelId}` : 'Channel'} onOpenChannelMember={() => setIsMemberListOpen(!isMemberListOpen)} />
 
                 {/* Messages Area (Scrollable) */}
                 <div className="flex-1 flex flex-col-reverse overflow-y-auto p-4 space-y-4">
@@ -49,8 +36,8 @@ const ChannelChatArea = () => {
                             <div className="w-10 h-10 rounded-full bg-indigo-500 mt-1 shrink-0"></div>
                             <div>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-white font-medium hover:underline cursor-pointer">{channelMembers ? channelMembers[message.senderId]?.displayName : "Unknown"}</span>
-                                    <span className="text-xs text-gray-400">{message.createdAt}</span>
+                                    <span className="text-white text-xs hover:underline cursor-pointer">{channelMembers ? channelMembers[message.senderId]?.displayName : "Unknown"}</span>
+                                    <span className="text-[11px] text-gray-400">{message.createdAt}</span>
                                 </div>
                                 <p className="text-gray-100">{message.content}</p>
                             </div>
@@ -71,8 +58,7 @@ const ChannelChatArea = () => {
                 </div>
             </div>
 
-            {/* Member List (Optional/Hidden on small screens) */}
-            {isMemberListOpen && <MemberList channelId={null} />}
+            {isMemberListOpen && <MemberList />}
         </>
     )
 }

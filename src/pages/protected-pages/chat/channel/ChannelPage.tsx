@@ -1,16 +1,17 @@
 // src/pages/ServerPage.tsx
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../../../features/hooks';
-import { getServerById } from '../../../features/chat/serverThunk';
-import ChannelLeftSidebar from '../../../components/chat/ChannelLeftSidebar';
-import ChannelChatArea from '../../../components/chat/ChannelChatArea';
+import { useAppDispatch, useAppSelector } from '../../../../features/hooks';
+import { getServerById } from '../../../../features/chat/serverThunk';
+import ChannelLeftSidebar from './components/ChannelLeftSidebar';
+import ChannelChatArea from './components/ChannelChatArea';
+import AppLoader from '../../../../components/common/AppLoader';
 
 export default function ChannelPage() {
     const { serverId } = useParams();
 
     const dispatch = useAppDispatch();
-    const { currentServerId, categories } = useAppSelector((state) => state.channel);
+    const { currentServerId, isLoading } = useAppSelector((state) => state.channel);
 
     useEffect(() => {
         if (serverId && serverId !== currentServerId) {
@@ -20,13 +21,13 @@ export default function ChannelPage() {
 
 
     // if (isLoading) {
-    //     return <div className="flex items-center justify-center h-full text-white">Loading...</div>;
+    //     return <AppLoader />
     // }
 
     return (
         <div className="flex flex-1 overflow-hidden">
             {/* 1. Secondary Sidebar (Channels) */}
-            <ChannelLeftSidebar categories={categories} currentServerId={currentServerId!} />
+            <ChannelLeftSidebar />
 
             {/* 2. Channel Chat Area */}
             {<ChannelChatArea />}

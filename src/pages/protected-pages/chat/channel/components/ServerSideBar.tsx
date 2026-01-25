@@ -1,11 +1,11 @@
 // src/components/layout/ServerSidebar.tsx
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../features/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useEffect, useState } from 'react';
-import { getServerById, getServers } from '../../features/chat/serverThunk';
+import { getServerById, getServers } from '../../../../../features/chat/serverThunk';
 import CreateServerForm from './CreateServerForm';
-import { flatChannelFormCategories } from '../../utils/channelUtil';
+import { flatChannelFormCategories } from '../../../../../utils/channelUtil';
 
 export default function ServerSidebar() {
     const navigate = useNavigate();

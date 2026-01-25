@@ -1,5 +1,5 @@
 
-const MemberList = ({ channelId }: { channelId: string | null }) => {
+const MemberList = () => {
     return (
         <div className="w-60 bg-[#2B2D31] hidden xl:flex flex-col p-4">
             <h3 className="text-xs font-bold text-gray-400 uppercase mb-4">Online — 1</h3>
