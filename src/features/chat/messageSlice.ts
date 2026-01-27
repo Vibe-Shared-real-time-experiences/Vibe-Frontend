@@ -35,18 +35,41 @@ const messageSlice = createSlice({
     },
     extraReducers: (builder) => {
         // FETCH MESSAGES BY CHANNEL ID
-        builder.addCase(fetchMessagesByChannelId.pending, (state) => {
-            state.messagesByChannelId = {};
+        builder.addCase(fetchMessagesByChannelId.pending, (state, action) => {
+            const { channelId } = action.meta.arg;
+
+            if (!state.messagesByChannelId[channelId]) {
+                state.messagesByChannelId[channelId] = {
+                    messages: [],
+                    senders: [],
+                    nextCursor: null,
+                    hasMore: true,
+                };
+            }
 
             state.isLoading = true;
             state.error = null;
         });
         builder.addCase(fetchMessagesByChannelId.fulfilled, (state, action) => {
             const { channelId } = action.meta.arg;
-            state.messagesByChannelId[channelId] = action.payload;
+            // New if no existing messages
+            if (!state.messagesByChannelId[channelId]) {
+                state.messagesByChannelId[channelId] = action.payload;
+            } else {
+                // Append messages to existing ones
+                state.messagesByChannelId[channelId]!.messages = [
+                    ...(state.messagesByChannelId[channelId]!.messages ?? []),
+                    ...(action.payload.messages ?? []),
+                ];
 
-            state.isLoading = false;
-            state.error = null;
+                state.messagesByChannelId[channelId].nextCursor = action.payload.nextCursor;
+                state.messagesByChannelId[channelId].hasMore = action.payload.hasMore;
+
+                console.log("message: ", state.messagesByChannelId[channelId].messages);
+
+                state.isLoading = false;
+                state.error = null;
+            }
         });
         builder.addCase(fetchMessagesByChannelId.rejected, (state, action) => {
             state.isLoading = false;

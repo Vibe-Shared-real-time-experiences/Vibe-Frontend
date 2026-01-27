@@ -14,6 +14,8 @@ export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { chan
                 hasMore: response.data.hasMore,
             };
 
+            console.log("Fetched messages: ", channelMessages);
+
             return channelMessages;
 
         } catch (error: unknown) {

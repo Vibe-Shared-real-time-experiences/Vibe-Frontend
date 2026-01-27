@@ -7,6 +7,7 @@ import PublicRoute from "../pages/public-pages/PublicRoute";
 import ProtectedRoute from "../pages/protected-pages/ProtectedRoute";
 import DMChannelPage from "../pages/protected-pages/chat/dm/DMChannelPage";
 import ChannelPage from "../pages/protected-pages/chat/channel/ChannelPage";
+import ChannelChatArea from "../pages/protected-pages/chat/channel/components/ChannelChatArea";
 
 export const router = createBrowserRouter([
 
@@ -53,9 +54,15 @@ export const router = createBrowserRouter([
             ]
           },
           {
-            path: ":serverId/:channelId",
+            path: ":serverId",
             element: <ChannelPage />,
-          }
+            children: [
+              {
+                path: ":channelId",
+                element: <ChannelChatArea />
+              }
+            ]
+          },
         ]
       },
     ]

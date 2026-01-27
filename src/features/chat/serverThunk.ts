@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { CreateServerRequest, ServerDetailResponse, ServerResponse } from "../../types/chat/server";
 
 import * as serverService from "../../services/chat/serverService";
+import type { RootState } from "../store";
 
 export const getServers = createAsyncThunk<ServerResponse[], void, { rejectValue: string }>(
     "chat/getServers",
@@ -23,6 +24,18 @@ export const getServerById = createAsyncThunk<ServerDetailResponse, string, { re
             return response.data.data;
         } catch (error: unknown) {
             return thunkApi.rejectWithValue("Fetching server by ID failed" + error);
+        }
+    },
+    {
+        condition: (serverId, { getState }) => {
+            const { server } = getState() as RootState;
+
+            if (server.isLoading && server.currentServerId === serverId) {
+                return false;
+            }
+
+            // Return true => Cho phép gọi API
+            return true;
         }
     }
 )

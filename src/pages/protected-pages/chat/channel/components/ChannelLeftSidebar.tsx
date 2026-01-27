@@ -1,31 +1,49 @@
 import { useAppSelector } from '../../../../../features/hooks';
-import { Hash } from 'lucide-react'
+import { ChevronDown, Plus, Users } from 'lucide-react'
+import ChannelItem from './ChannelItem';
+import { useNavigate } from 'react-router-dom';
+import { setActiveChannel } from '../../../../../features/chat/channelSlice';
 
 const ChannelLeftSidebar = () => {
 
-  const { categories, currentServerId } = useAppSelector((state) => state.channel);
+  const { categories, currentServerId, activeChannelId } = useAppSelector((state) => state.channel);
   const { servers } = useAppSelector((state) => state.server);
 
+  const navigate = useNavigate();
+
   const currentServer = servers.find(server => server.id === currentServerId);
+
+  const handleOnchangeChannel = (channelId: string) => {
+    if (!channelId) return;
+
+    setActiveChannel(channelId);
+    navigate(`/channels/${currentServerId}/${channelId}`);
+  }
 
   return (
     <div className="w-60 bg-[#2B2D31] flex flex-col">
       {/* Server Header */}
-      <div className="h-12 border-b border-[#1F2023] hover:bg-[#35373C] transition cursor-pointer px-4 flex items-center justify-between shadow-sm">
-        <h1 className="font-bold text-white truncate">{currentServer?.name}</h1>
+      <div className="h-12 border-b border-[#1F2023]  transition cursor-pointer px-4 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-1 flex-1 hover:bg-[#35373C]">
+          <h1 className="font-bold text-white truncate">{currentServer?.name}</h1>
+          <ChevronDown size={18} className="text-gray-400 flex-shrink-0" />
+        </div>
+        <div>
+          <Users size={16} className="text-gray-500 hover:text-gray-300 cursor-pointer" />
+        </div>
       </div>
 
       {/* Channel List */}
       <div className="flex-1 flex flex-col overflow-y-auto p-2 space-y-0.5 gap-y-1">
         {categories.map(category => (
           <div key={category.id} className="mt-4">
-            <div className="text-xs font-bold text-gray-500 uppercase px-2 mb-1">{category.name}</div>
+            <div className="flex items-center justify-between px-2 mb-1">
+              <div className="text-xs font-bold text-gray-500 uppercase">{category.name}</div>
+              <Plus size={16} className="text-gray-500 hover:text-gray-300 cursor-pointer transition" />
+            </div>
             <div className="space-y-0.5">
               {category.channels.map(channel => (
-                <div key={channel.id} className="group flex items-center px-2 py-[6px] rounded hover:bg-[#35373C] text-gray-400 hover:text-gray-100 cursor-pointer transition">
-                  <Hash size={20} className="mr-1.5 text-gray-400" />
-                  <span className="font-medium truncate">{channel.name}</span>
-                </div>
+                <ChannelItem key={channel.id} channel={channel} activeChannelId={activeChannelId} onChangeChannel={handleOnchangeChannel} />
               ))}
             </div>
           </div>

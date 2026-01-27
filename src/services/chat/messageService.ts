@@ -6,7 +6,7 @@ import type { CursorResponse } from '../../types/common/cursorResponse';
 
 export const fetchMessagesByChannelId = async ({ channelId, cursor }: { channelId: string; cursor: string | null }) => {
     // GET /channels/{id}/messages?cursor={cursor}&limit=20
-    const params = cursor ? { cursor, limit: 20 } : { limit: 20 };
+    const params = cursor ? { cursor, limit: 50 } : { limit: 50 };
     const response = await axiosClient.get<ApiResponse<CursorResponse<ChannelMessagesResponse>>>(`/v1/channels/${channelId}/messages`, { params });
 
     if (response.status === 200) {
