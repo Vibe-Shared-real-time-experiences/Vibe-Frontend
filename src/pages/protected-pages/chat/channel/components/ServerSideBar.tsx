@@ -28,10 +28,10 @@ export default function ServerSidebar() {
         }
 
         const serverDetail = await dispatch(getServerById(serverId)).unwrap();
-        const { activeChannelId } = flatChannelFormCategories(serverDetail);
+        const { currentChannel } = flatChannelFormCategories(serverDetail);
 
-        if (activeChannelId) {
-            navigate(`/channels/${serverDetail.id}/${activeChannelId}`);
+        if (currentChannel) {
+            navigate(`/channels/${serverDetail.id}/${currentChannel.id}`);
         } else {
             throw new Error("No active channel found");
         }

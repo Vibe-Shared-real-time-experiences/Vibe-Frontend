@@ -3,7 +3,7 @@ import type { ServerDetailResponse } from "../types/chat/server";
 
 export const flatChannelFormCategories = (server: ServerDetailResponse) => {
     const channelsMap: Record<string, ChannelResponse> = {};
-    let firstChannelId: string | null = null;
+    let firstChannel: ChannelResponse | null = null;
 
     server.categories.forEach((cat) => {
         if (cat.position === 0 && cat.channels.length > 0) {
@@ -12,12 +12,17 @@ export const flatChannelFormCategories = (server: ServerDetailResponse) => {
                 channelsMap[chan.id] = chan;
 
                 // 2. Find first text channel ID
-                if (firstChannelId == null && chan.type === "TEXT" && chan.position === 0) {
-                    firstChannelId = chan.id;
+                if (firstChannel == null && chan.type === "TEXT" && chan.position === 0) {
+                    firstChannel = chan;
                 }
             });
         }
     });
 
-    return { serverId: server.id, categories: server.categories, channelsMap, activeChannelId: firstChannelId };
+    return {
+        serverId: server.id.toString(),
+        categories: server.categories,
+        channelsMap,
+        currentChannel: firstChannel,
+    };
 };

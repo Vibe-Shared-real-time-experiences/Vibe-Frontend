@@ -11,7 +11,7 @@ interface ChannelState {
 
     channelsMap: Record<string, ChannelResponse>;
 
-    activeChannelId: string | null;
+    currentChannel: ChannelResponse | null;
     isLoading: boolean;
     error: string | null;
 }
@@ -20,7 +20,7 @@ const initialState: ChannelState = {
     currentServerId: null,
     categories: [],
     channelsMap: {},
-    activeChannelId: null,
+    currentChannel: null,
     isLoading: false,
     error: null,
 };
@@ -30,19 +30,19 @@ export const channelSlice = createSlice({
     initialState: initialState,
     reducers: {
         setServerData: (state, action: PayloadAction<ServerDetailResponse>) => {
-            const { serverId, categories, channelsMap, activeChannelId } = flatChannelFormCategories(action.payload);
+            const { serverId, categories, channelsMap, currentChannel } = flatChannelFormCategories(action.payload);
 
             state.currentServerId = serverId;
             state.categories = categories;
             state.channelsMap = channelsMap;
-            state.activeChannelId = activeChannelId;
+            state.currentChannel = currentChannel;
 
             state.isLoading = false;
             state.error = null;
         },
 
-        setActiveChannel: (state, action: PayloadAction<string>) => {
-            state.activeChannelId = action.payload;
+        setActiveChannel: (state, action: PayloadAction<ChannelResponse | null>) => {
+            state.currentChannel = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -52,12 +52,12 @@ export const channelSlice = createSlice({
         });
 
         builder.addCase(getServerById.fulfilled, (state, action: PayloadAction<ServerDetailResponse>) => {
-            const { serverId, categories, channelsMap, activeChannelId } = flatChannelFormCategories(action.payload);
+            const { serverId, categories, channelsMap, currentChannel } = flatChannelFormCategories(action.payload);
 
             state.currentServerId = serverId;
             state.categories = categories;
             state.channelsMap = channelsMap;
-            state.activeChannelId = activeChannelId;
+            state.currentChannel = currentChannel;
             state.isLoading = false;
             state.error = null;
         });

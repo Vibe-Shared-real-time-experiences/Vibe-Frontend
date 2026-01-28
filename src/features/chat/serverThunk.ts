@@ -25,18 +25,6 @@ export const getServerById = createAsyncThunk<ServerDetailResponse, string, { re
         } catch (error: unknown) {
             return thunkApi.rejectWithValue("Fetching server by ID failed" + error);
         }
-    },
-    {
-        condition: (serverId, { getState }) => {
-            const { server } = getState() as RootState;
-
-            if (server.isLoading && server.currentServerId === serverId) {
-                return false;
-            }
-
-            // Return true => Cho phép gọi API
-            return true;
-        }
     }
 )
 

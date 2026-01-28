@@ -1,4 +1,5 @@
 import axiosClient from '../../api/client';
+import type { CreateMessageRequest } from './../../types/chat/message';
 import type { ChannelMessagesResponse } from '../../types/chat/message';
 import type { ApiResponse } from '../../types/common/apiResponse';
 import type { CursorResponse } from '../../types/common/cursorResponse';
@@ -13,5 +14,15 @@ export const fetchMessagesByChannelId = async ({ channelId, cursor }: { channelI
         return response.data;
     } else {
         throw new Error('Failed to fetch messages');
+    }
+}
+
+export const sendMessage = async (createMessageRequest: CreateMessageRequest) => {
+    // POST /messages
+    const response = await axiosClient.post<ApiResponse<any>>(`/v1/messages`, createMessageRequest);
+    if (response.status === 200 || response.status === 201) {
+        return response.data;
+    } else {
+        throw new Error('Failed to send message');
     }
 }

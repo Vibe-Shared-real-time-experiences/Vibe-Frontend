@@ -1,5 +1,11 @@
 import type { MemberSummaryInfo } from "./member";
 
+export interface CreateMessageRequest {
+    clientUniqueId: string;
+    content: string;
+    attachments: string[];
+}
+
 export interface ChannelMessages extends ChannelMessagesResponse {
     nextCursor: string | null;
     hasMore: boolean;

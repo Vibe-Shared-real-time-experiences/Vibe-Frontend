@@ -1,24 +1,22 @@
-import MemberList from './MemberList'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
 import { fetchMessagesByChannelId } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
 import { Plus } from 'lucide-react';
+import { ChatInput } from './ChatInput';
 
 const ChannelChatArea = () => {
     const { channelId, serverId } = useParams();
     const dispatch = useAppDispatch();
 
-    // Select data
-    const { categories, currentServerId, activeChannelId } = useAppSelector((state) => state.channel);
+    const currentChannel = useAppSelector((state) => state.channel.channelsMap[channelId || '']);
     const { messagesByChannelId } = useAppSelector((state) => state.message);
     const { channelMembers } = useAppSelector((state) => state.member);
 
-    // Lấy data cụ thể của channel này
     const channelData = channelId ? messagesByChannelId[channelId] : null;
     const currentMessages = channelData?.messages || [];
-    const nextCursor = channelData?.nextCursor; // Lấy cursor hiện tại ra
+    const nextCursor = channelData?.nextCursor;
 
     const fetchingChannelIdRef = useRef<string | null>(null);
 
@@ -33,12 +31,14 @@ const ChannelChatArea = () => {
         const isNoData = channelId !== null && messagesByChannelId[channelId!] == null
         const isFetching = fetchingChannelIdRef.current !== channelId;
 
-        if (channelId && (isNoData || isFetching)) {
+        if (channelId && isNoData && isFetching) {
+            fetchingChannelIdRef.current = channelId;
 
             // Reset scroll về 0 để tránh tính toán sai layout cũ
             prevScrollHeightRef.current = 0;
             dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null }));
         }
+
     }, [dispatch, channelId, serverId]);
 
     const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
@@ -82,12 +82,15 @@ const ChannelChatArea = () => {
         }
     }, [currentMessages.length, channelId]);
 
+    const handleSendChannelMessage = (content: string) => {
+        if (!channelId) return;
+    }
 
     const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
     return (
         <>
-            <ChannelChatHeader title={channelId ? `#${channelId}` : 'Channel'} onOpenChannelMember={() => setIsMemberListOpen(!isMemberListOpen)} />
+            <ChannelChatHeader title={currentChannel?.name ? `#${currentChannel.name}` : 'Channel'} onOpenChannelMember={() => setIsMemberListOpen(!isMemberListOpen)} />
 
             <div
                 ref={chatContainerRef}
@@ -130,7 +133,11 @@ const ChannelChatArea = () => {
             </div>
 
             {/* Message Input */}
-            <div className="px-4 pb-6 pt-2">
+            <ChatInput
+                placeholder={`Message #${currentChannel?.name || 'general'}`}
+                onSubmit={handleSendChannelMessage}
+            />
+            {/* <div className="px-4 pb-6 pt-2">
                 <div className="bg-[#383A40] rounded-lg px-4 py-2.5 flex items-center gap-4">
                     <Plus size={24} className="text-gray-200 cursor-pointer bg-gray-700 rounded-full p-1" />
                     <input
@@ -139,7 +146,7 @@ const ChannelChatArea = () => {
                         className="bg-transparent border-none outline-none text-white w-full placeholder-gray-400"
                     />
                 </div>
-            </div>
+            </div> */}
         </>
     )
 }

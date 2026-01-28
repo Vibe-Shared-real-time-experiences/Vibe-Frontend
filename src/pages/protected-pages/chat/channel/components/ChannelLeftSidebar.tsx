@@ -1,22 +1,23 @@
 import { useAppSelector } from '../../../../../features/hooks';
 import { ChevronDown, Plus, Users } from 'lucide-react'
 import ChannelItem from './ChannelItem';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { setActiveChannel } from '../../../../../features/chat/channelSlice';
 
 const ChannelLeftSidebar = () => {
 
-  const { categories, currentServerId, activeChannelId } = useAppSelector((state) => state.channel);
+  const { channelId } = useParams();
+  const { categories, currentServerId, channelsMap } = useAppSelector((state) => state.channel);
   const { servers } = useAppSelector((state) => state.server);
 
   const navigate = useNavigate();
 
-  const currentServer = servers.find(server => server.id === currentServerId);
+  const currentServer = servers.find(server => server.id == currentServerId);
 
   const handleOnchangeChannel = (channelId: string) => {
     if (!channelId) return;
 
-    setActiveChannel(channelId);
+    setActiveChannel(channelsMap[channelId]);
     navigate(`/channels/${currentServerId}/${channelId}`);
   }
 
@@ -43,7 +44,7 @@ const ChannelLeftSidebar = () => {
             </div>
             <div className="space-y-0.5">
               {category.channels.map(channel => (
-                <ChannelItem key={channel.id} channel={channel} activeChannelId={activeChannelId} onChangeChannel={handleOnchangeChannel} />
+                <ChannelItem key={channel.id} channel={channel} isActive={channelId == channel.id} onChangeChannel={handleOnchangeChannel} />
               ))}
             </div>
           </div>
