@@ -3,10 +3,10 @@ import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
 import { fetchMessagesByChannelId, sendMessage } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
-import { ChatInput } from './ChatInput';
+import { ChatInput } from '../../components/ChatInput';
 import { mediaService } from '../../../../../services/media/mediaService';
 import type { MessageAttachmentRequest } from '../../../../../types/media/attachment';
-import MessageItem from './MessageItem';
+import MessageItem from '../../components/MessageItem';
 
 const ChannelChatArea = () => {
     const { channelId, serverId } = useParams();

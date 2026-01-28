@@ -1,5 +1,5 @@
 import { Plus, X, File as FileIcon } from "lucide-react";
-import { useState, useRef, ChangeEvent } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
 
 interface ChatInputProps {
     placeholder: string;
