@@ -1,9 +1,11 @@
+import type { MessageAttachmentRequest } from "../media/attachment";
 import type { MemberSummaryInfo } from "./member";
+import type { UIMessage } from "./ui/message";
 
 export interface CreateMessageRequest {
     clientUniqueId: string;
     content: string;
-    attachments: string[];
+    attachments: MessageAttachmentRequest[];
 }
 
 export interface ChannelMessages extends ChannelMessagesResponse {
@@ -12,7 +14,7 @@ export interface ChannelMessages extends ChannelMessagesResponse {
 }
 
 export interface ChannelMessagesResponse {
-    messages: MessageResponse[] | null;
+    messages: UIMessage[] | null;
     senders: MemberSummaryInfo[] | null;
 }
 
@@ -37,4 +39,9 @@ export interface MessageAttachmentResponse {
 
 export interface MessageMetadataResponse {
     reactions: Record<string, number>; // e.g., { "like": 10, "love": 5 }
+}
+export interface CreateMessageResponse {
+    clientUniqueId: string;
+    messageId: string;
+    status: "SENDING" | "SUCCESS" | "FAILED";
 }

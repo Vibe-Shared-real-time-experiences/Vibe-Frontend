@@ -3,7 +3,6 @@ import type { ChannelResponse } from '../../../../../types/chat/channel';
 
 const ChannelItem = ({ channel, isActive, onChangeChannel }: { channel: ChannelResponse; isActive: boolean; onChangeChannel: (channelId: string) => void }) => {
     return (
-
         <div
             onClick={() => onChangeChannel(channel.id)}
             key={channel.id}

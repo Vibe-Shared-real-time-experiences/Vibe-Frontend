@@ -1,8 +1,8 @@
-import type { ChannelMessages, MessageResponse } from '../../types/chat/message';
+import type { ChannelMessages } from '../../types/chat/message';
+import type { MessageAttachmentRequest } from '../../types/media/attachment';
 import * as messageService from './../../services/chat/messageService';
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from 'uuid'; // Cài thư viện uuid
-import { messageSlice } from './messageSlice';
+import { v4 as uuidv4 } from 'uuid';
 export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { channelId: string; cursor: string | null }, { rejectValue: string }>(
     "message/fetchMessages",
     async ({ channelId, cursor }: { channelId: string; cursor: string | null }, thunkApi) => {
@@ -16,8 +16,6 @@ export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { chan
                 hasMore: response.data.hasMore,
             };
 
-            console.log("Fetched messages: ", channelMessages);
-
             return channelMessages;
 
         } catch (error: unknown) {
@@ -28,38 +26,24 @@ export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { chan
 
 export const sendMessage = createAsyncThunk(
     "message/send",
-    async ({ channelId, content, attachments }: { content: string, channelId: string, attachments: any[] }, thunkAPI) => {
+    async ({ channelId, content, attachments }: { channelId: string, content: string, attachments: MessageAttachmentRequest[] }, thunkAPI) => {
         const key = uuidv4();
-
-        const optimisticMessage: MessageResponse = {
-            id: key,
-            channelId,
-            content,
-            senderId: "me", // Lấy từ auth store
-            createdAt: new Date().toISOString(),
-            status: "sending", // 🟡 Đang gửi
-            key: key
-        };
-
-        // Dispatch action nhỏ để nhét ngay vào Store (cho hiện lên UI)
-        thunkAPI.dispatch(messageSlice.actions.addOptimisticMessage(optimisticMessage));
+        const tempId = key;
 
         try {
-            // 3. Gọi API thật
-            const response = await messageService.sendMessage({
-                clientUniqueId: key,
-                content: content,
-                attachments: attachments
-            });
+            const response = await messageService.sendMessage(
+                channelId,
+                {
+                    clientUniqueId: key,
+                    content: content,
+                    attachments: attachments
+                });
 
-            // 4. API trả về tin thật -> Return để Reducer update lại
             return {
-                key, // Trả lại tempId để reducer biết mà tìm
-                realMessage: response.data // Tin nhắn xịn từ DB
-            };
+                realMessage: response.data
+            }
 
         } catch (error) {
-            // 5. Lỗi -> Return reject để update thành error
             return thunkAPI.rejectWithValue({ tempId, error });
         }
     }

@@ -1,8 +1,7 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { ChannelMessages, MessageResponse } from "../../types/chat/message";
+import { createSlice } from "@reduxjs/toolkit";
+import type { ChannelMessages } from "../../types/chat/message";
 import { fetchMessagesByChannelId, sendMessage } from "./messageThunk";
-import { getServerById } from "./serverThunk";
-
+import type { UIMessage } from "../../types/chat/ui/message";
 interface MessageState {
     messagesByChannelId: Record<string, ChannelMessages | null>;
     isLoading: boolean;
@@ -35,7 +34,7 @@ export const messageSlice = createSlice({
 
         addOptimisticMessage: (state, action) => {
             const { channelId } = action.payload;
-            state.messagesByChannelId[channelId]!.messages!.unshift(action.payload);
+            state.messagesByChannelId[channelId]!.messages!.push(action.payload);
         }
     },
     extraReducers: (builder) => {
@@ -70,8 +69,6 @@ export const messageSlice = createSlice({
                 state.messagesByChannelId[channelId].nextCursor = action.payload.nextCursor;
                 state.messagesByChannelId[channelId].hasMore = action.payload.hasMore;
 
-                console.log("message: ", state.messagesByChannelId[channelId].messages);
-
                 state.isLoading = false;
                 state.error = null;
             }
@@ -82,37 +79,74 @@ export const messageSlice = createSlice({
         });
 
         // SEND MESSAGE
-        builder.addCase(sendMessage.fulfilled, (state, action) => {
-            const { key, realMessage } = action.payload
-            const channelId = realMessage.channelId;
+        builder.addCase(sendMessage.pending, (state, action) => {
+            const { channelId, content } = action.meta.arg;
+            const tempId = action.meta.requestId;
 
-            // Tìm tin nhắn tạm bằng tempId và thay thế bằng tin thật
+            // 1. Create temp message for optimistic UI
+            const tempMessage: UIMessage = {
+                id: tempId, // Using dispatch requestId as temp ID
+                channelId,
+                content: content,
+                senderId: "me", // Placeholder, replace with actual sender ID
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                attachments: [],
+                metadata: null,
+                status: "SENDING"
+            };
+
+            // 2. Add temp message to state immediately
+            if (!state.messagesByChannelId[channelId]) {
+                state.messagesByChannelId[channelId] = {
+                    messages: [],
+                    senders: [],
+                    nextCursor: null,
+                    hasMore: false,
+                }
+            }
+            state.messagesByChannelId[channelId]!.messages!.unshift(tempMessage);
+
+            state.isLoading = true;
+            state.error = null;
+        });
+        builder.addCase(sendMessage.fulfilled, (state, action) => {
+            const tempId = action.meta.requestId;
+
+            const channelId = action.meta.arg.channelId;
+            const { realMessage } = action.payload
+
+            // Replace temp message with real message
             const channelData = state.messagesByChannelId[channelId];
             if (channelData) {
-                const index = channelData.messages!.findIndex(m => m.id === key);
+                const index = channelData.messages!.findIndex(m => m.id === tempId);
                 if (index !== -1) {
                     channelData.messages![index] = {
+                        ...channelData.messages![index],
                         ...realMessage,
-                        status: "sent" // 🟢 Đã gửi
+                        status: "SUCCESS"
                     };
                 }
             }
-        });
 
-        // Gửi thất bại
+            state.isLoading = false;
+            state.error = null;
+        });
         builder.addCase(sendMessage.rejected, (state, action) => {
-            const { key } = action.payload as any; // Lấy tempId từ rejectValue
-            // Tìm và update status = error để hiện màu đỏ
-            // ... logic tìm index như trên ...
+            const tempId = action.meta.requestId;
+
             const channelId = action.meta.arg.channelId;
             const channelData = state.messagesByChannelId[channelId];
 
             if (!channelData) return;
 
-            const index = channelData.messages!.findIndex(m => m.id === key);
+            const index = channelData.messages!.findIndex(m => m.id === tempId);
             if (index !== -1) {
-                channelData.messages![index].status = "error"; // 🔴 Lỗi
+                channelData.messages![index].status = "FAILED";
             }
+
+            state.isLoading = false;
+            state.error = "Failed to send message";
         });
     },
 })

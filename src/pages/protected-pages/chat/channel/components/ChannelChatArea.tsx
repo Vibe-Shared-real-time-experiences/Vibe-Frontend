@@ -1,10 +1,12 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
-import { fetchMessagesByChannelId } from '../../../../../features/chat/messageThunk';
+import { fetchMessagesByChannelId, sendMessage } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
-import { Plus } from 'lucide-react';
 import { ChatInput } from './ChatInput';
+import { mediaService } from '../../../../../services/media/mediaService';
+import type { MessageAttachmentRequest } from '../../../../../types/media/attachment';
+import MessageItem from './MessageItem';
 
 const ChannelChatArea = () => {
     const { channelId, serverId } = useParams();
@@ -33,8 +35,6 @@ const ChannelChatArea = () => {
 
         if (channelId && isNoData && isFetching) {
             fetchingChannelIdRef.current = channelId;
-
-            // Reset scroll về 0 để tránh tính toán sai layout cũ
             prevScrollHeightRef.current = 0;
             dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null }));
         }
@@ -49,7 +49,6 @@ const ChannelChatArea = () => {
             prevScrollHeightRef.current = container.scrollHeight;
 
             try {
-                // Gọi API với cursor tiếp theo
                 await dispatch(fetchMessagesByChannelId({
                     channelId: channelId!,
                     cursor: nextCursor
@@ -82,9 +81,36 @@ const ChannelChatArea = () => {
         }
     }, [currentMessages.length, channelId]);
 
-    const handleSendChannelMessage = (content: string) => {
-        if (!channelId) return;
-    }
+    const [isSending, setIsSending] = useState(false);
+
+    const handleSendMessage = async (content: string, files: File[]) => {
+        if (!content && files.length === 0) return;
+
+        setIsSending(true);
+
+        try {
+            let attachments: MessageAttachmentRequest[] = [];
+
+            // 1. Send image first if any
+            if (files.length > 0) {
+                attachments = await Promise.all(
+                    files.map(file => mediaService.upload(file, "ATTACHMENT"))
+                );
+            }
+
+            // 2. Send message with attachment URLs that sent from media service
+            await dispatch(sendMessage({
+                channelId: channelId!,
+                content: content,
+                attachments: attachments
+            }))
+
+        } catch (error) {
+            console.error("Failed to send message", error);
+        } finally {
+            setIsSending(false);
+        }
+    };
 
     const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
@@ -113,40 +139,16 @@ const ChannelChatArea = () => {
 
                 {/* Render messages */}
                 {[...currentMessages].reverse().map((message) => (
-                    <div key={message.id} className="flex gap-4 hover:bg-[#2e3035] -mx-4 px-4 py-1 group">
-                        <div className="w-10 h-10 rounded-full bg-indigo-500 mt-1 shrink-0"></div>
-                        <div>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-white text-base font-medium hover:underline cursor-pointer">
-                                    {channelMembers ? channelMembers[message.senderId]?.displayName : "Unknown"}
-                                </span>
-                                <span className="text-xs text-gray-400 ml-1">
-                                    {message.createdAt}
-                                </span>
-                            </div>
-                            <p className="text-gray-300 text-sm whitespace-pre-wrap">
-                                {message.content}
-                            </p>
-                        </div>
-                    </div>
+                    <MessageItem key={message.id} message={message} channelMembers={channelMembers} />
                 ))}
             </div>
 
             {/* Message Input */}
             <ChatInput
                 placeholder={`Message #${currentChannel?.name || 'general'}`}
-                onSubmit={handleSendChannelMessage}
+                onSubmit={handleSendMessage}
+                disabled={isSending}
             />
-            {/* <div className="px-4 pb-6 pt-2">
-                <div className="bg-[#383A40] rounded-lg px-4 py-2.5 flex items-center gap-4">
-                    <Plus size={24} className="text-gray-200 cursor-pointer bg-gray-700 rounded-full p-1" />
-                    <input
-                        type="text"
-                        placeholder={`Message #${channelId || 'general'}`}
-                        className="bg-transparent border-none outline-none text-white w-full placeholder-gray-400"
-                    />
-                </div>
-            </div> */}
         </>
     )
 }
