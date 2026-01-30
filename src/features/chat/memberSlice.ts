@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { MemberSummaryInfo } from "../../types/chat/member";
 import { fetchMessagesByChannelId } from "./messageThunk";
-import type { ChannelMessages } from "../../types/chat/message";
+import type { ChannelMessages } from "../../types/chat/api/message";
+import type { MemberSummaryInfo } from "../../types/chat/api/member";
 
 
 interface memberState {

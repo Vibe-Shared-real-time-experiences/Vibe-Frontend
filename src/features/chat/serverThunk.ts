@@ -1,8 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { CreateServerRequest, ServerDetailResponse, ServerResponse } from "../../types/chat/server";
+import type { CreateServerRequest, ServerDetailResponse, ServerResponse } from "../../types/chat/api/server";
 
 import * as serverService from "../../services/chat/serverService";
-import type { RootState } from "../store";
 
 export const getServers = createAsyncThunk<ServerResponse[], void, { rejectValue: string }>(
     "chat/getServers",

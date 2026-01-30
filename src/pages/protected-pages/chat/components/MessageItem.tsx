@@ -1,27 +1,17 @@
 import React from 'react'
 import type { UIMessage } from '../../../../types/chat/ui/message';
-
-import { FileIcon, Download, Loader2, AlertCircle } from 'lucide-react';
-import type { AttachmentResponse } from '../../../../types/media/attachment';
-import type { MemberSummaryInfo } from '../../../../types/chat/member';
+import { Loader2, AlertCircle } from 'lucide-react';
+import type { MemberSummaryInfo } from '../../../../types/chat/api/member';
 import { VisualAttachment } from './VisualAttachment';
-
-// Helper: Format file size (bytes -> KB/MB)
-const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-};
+import { FileAttachment } from './FileAttachment';
 
 const MessageItem = ({ message, channelMembers }: { message: UIMessage; channelMembers: Record<string, MemberSummaryInfo> | null }) => {
 
     const visualMedia = message.attachments?.filter(a =>
-        a.contentType.startsWith('image/') || a.contentType.startsWith('video/')
+        a.contentType?.startsWith('image/') || a.contentType?.startsWith('video/')
     ) || [];
-    const files = message.attachments?.filter(a => !a.contentType.startsWith('image/')
-        && !a.contentType.startsWith('video/')) || [];
+    const files = message.attachments?.filter(a => !a.contentType?.startsWith('image/')
+        && !a.contentType?.startsWith('video/')) || [];
 
     const isSending = message.status === 'SENDING';
     const isError = message.status === 'FAILED';
@@ -85,31 +75,6 @@ const MessageItem = ({ message, channelMembers }: { message: UIMessage; channelM
     );
 };
 
-const FileAttachment = ({ attachment }: { attachment: AttachmentResponse }) => {
-    return (
-        <div className="flex items-center gap-3 p-3 rounded bg-[#2b2d31] border border-[#1e1f22] hover:bg-[#35373c] transition group/file">
-            <div className="p-2 bg-indigo-500/10 rounded">
-                <FileIcon className="w-8 h-8 text-indigo-400" />
-            </div>
-            <div className="flex-1 min-w-0">
-                <div className="text-sm text-indigo-100 font-medium truncate">
-                    {attachment.url.split('/').pop()}
-                </div>
-                <div className="text-xs text-gray-400">
-                    {formatFileSize(attachment.size)}
-                </div>
-            </div>
-            {/* Download button */}
-            <a
-                href={attachment.url}
-                target="_blank"
-                rel="noreferrer"
-                className="p-2 text-gray-400 hover:text-white opacity-0 group-hover/file:opacity-100 transition"
-            >
-                <Download className="w-5 h-5" />
-            </a>
-        </div>
-    );
-};
+
 
 export default MessageItem;

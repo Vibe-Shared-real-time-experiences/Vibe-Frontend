@@ -4,8 +4,6 @@ import { useParams } from 'react-router-dom';
 import { fetchMessagesByChannelId, sendMessage } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
 import { ChatInput } from '../../components/ChatInput';
-import { mediaService } from '../../../../../services/media/mediaService';
-import type { MessageAttachmentRequest } from '../../../../../types/media/attachment';
 import MessageItem from '../../components/MessageItem';
 
 const ChannelChatArea = () => {
@@ -89,20 +87,10 @@ const ChannelChatArea = () => {
         setIsSending(true);
 
         try {
-            let attachments: MessageAttachmentRequest[] = [];
-
-            // 1. Send image first if any
-            if (files.length > 0) {
-                attachments = await Promise.all(
-                    files.map(file => mediaService.upload(file, "ATTACHMENT"))
-                );
-            }
-
-            // 2. Send message with attachment URLs that sent from media service
             await dispatch(sendMessage({
                 channelId: channelId!,
                 content: content,
-                attachments: attachments
+                files: files
             }))
 
         } catch (error) {

@@ -1,4 +1,5 @@
-import type { ChannelMessages } from '../../types/chat/message';
+import { mediaService } from '../../services/media/mediaService';
+import type { ChannelMessages } from '../../types/chat/api/message';
 import type { MessageAttachmentRequest } from '../../types/media/attachment';
 import * as messageService from './../../services/chat/messageService';
 import { createAsyncThunk } from "@reduxjs/toolkit";
@@ -26,21 +27,32 @@ export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { chan
 
 export const sendMessage = createAsyncThunk(
     "message/send",
-    async ({ channelId, content, attachments }: { channelId: string, content: string, attachments: MessageAttachmentRequest[] }, thunkAPI) => {
+    async ({ channelId, content, files }: { channelId: string, content: string, files: File[] }, thunkAPI) => {
         const key = uuidv4();
         const tempId = key;
 
         try {
+            let attachmentResponses: MessageAttachmentRequest[] = [];
+
+            // 1. Send image first if any
+            if (files.length > 0) {
+                attachmentResponses = await Promise.all(
+                    files.map(file => mediaService.upload(file, "ATTACHMENT"))
+                );
+            }
+
+            // 2. Send message with attachment URLs that sent from media service
             const response = await messageService.sendMessage(
                 channelId,
                 {
                     clientUniqueId: key,
                     content: content,
-                    attachments: attachments
+                    attachments: attachmentResponses
                 });
 
             return {
-                realMessage: response.data
+                realMessage: response.data,
+                attachmentResponses: attachmentResponses
             }
 
         } catch (error) {

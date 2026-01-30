@@ -1,9 +1,9 @@
+import type { UIAttachment, UIChannelMessages } from './../../types/chat/ui/message';
 import { createSlice } from "@reduxjs/toolkit";
-import type { ChannelMessages } from "../../types/chat/message";
 import { fetchMessagesByChannelId, sendMessage } from "./messageThunk";
 import type { UIMessage } from "../../types/chat/ui/message";
 interface MessageState {
-    messagesByChannelId: Record<string, ChannelMessages | null>;
+    messagesByChannelId: Record<string, UIChannelMessages | null>;
     isLoading: boolean;
     error: string | null;
 }
@@ -80,8 +80,22 @@ export const messageSlice = createSlice({
 
         // SEND MESSAGE
         builder.addCase(sendMessage.pending, (state, action) => {
-            const { channelId, content } = action.meta.arg;
+            const { channelId, content, files } = action.meta.arg;
             const tempId = action.meta.requestId;
+
+            const previewAttachments: UIAttachment[] = files.map(file => {
+                const type = file.type.startsWith('image/') ? 'IMAGE'
+                    : file.type.startsWith('video/') ? 'VIDEO'
+                        : 'FILE';
+
+                return {
+                    url: URL.createObjectURL(file),
+                    type: type,
+                    contentType: file.type,
+                    size: file.size,
+                    isUploading: true
+                };
+            });
 
             // 1. Create temp message for optimistic UI
             const tempMessage: UIMessage = {
@@ -91,7 +105,10 @@ export const messageSlice = createSlice({
                 senderId: "me", // Placeholder, replace with actual sender ID
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-                attachments: [],
+                attachments: previewAttachments.map(att => ({
+                    ...att,
+                    isUploading: true
+                })),
                 metadata: null,
                 status: "SENDING"
             };
@@ -109,12 +126,15 @@ export const messageSlice = createSlice({
 
             state.isLoading = true;
             state.error = null;
+
+            // 3. Cleanup preview URLs 
+            // previewAttachments.forEach(att => URL.revokeObjectURL(att.url));
         });
         builder.addCase(sendMessage.fulfilled, (state, action) => {
             const tempId = action.meta.requestId;
 
             const channelId = action.meta.arg.channelId;
-            const { realMessage } = action.payload
+            const { attachmentResponses } = action.payload
 
             // Replace temp message with real message
             const channelData = state.messagesByChannelId[channelId];
@@ -123,7 +143,7 @@ export const messageSlice = createSlice({
                 if (index !== -1) {
                     channelData.messages![index] = {
                         ...channelData.messages![index],
-                        ...realMessage,
+                        attachments: attachmentResponses,
                         status: "SUCCESS"
                     };
                 }

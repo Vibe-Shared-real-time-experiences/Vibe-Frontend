@@ -43,7 +43,7 @@ const ChannelLeftSidebar = () => {
               <Plus size={16} className="text-gray-500 hover:text-gray-300 cursor-pointer transition" />
             </div>
             <div className="space-y-0.5">
-              {category.channels.map(channel => (
+              {category.channels.map((channel) => (
                 <ChannelItem key={channel.id} channel={channel} isActive={channelId == channel.id} onChangeChannel={handleOnchangeChannel} />
               ))}
             </div>

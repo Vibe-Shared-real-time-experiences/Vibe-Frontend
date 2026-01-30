@@ -1,12 +1,5 @@
-import type { MessageAttachmentRequest } from "../media/attachment";
+import type { MessageAttachmentResponse } from "../../media/api/attatchmentResponse";
 import type { MemberSummaryInfo } from "./member";
-import type { UIMessage } from "./ui/message";
-
-export interface CreateMessageRequest {
-    clientUniqueId: string;
-    content: string;
-    attachments: MessageAttachmentRequest[];
-}
 
 export interface ChannelMessages extends ChannelMessagesResponse {
     nextCursor: string | null;
@@ -14,7 +7,7 @@ export interface ChannelMessages extends ChannelMessagesResponse {
 }
 
 export interface ChannelMessagesResponse {
-    messages: UIMessage[] | null;
+    messages: MessageResponse[] | null;
     senders: MemberSummaryInfo[] | null;
 }
 
@@ -28,15 +21,6 @@ export interface MessageResponse {
     createdAt: string;
     updatedAt: string;
 }
-export interface MessageAttachmentResponse {
-    url: string;
-    type: "IMAGE" | "VIDEO" | "FILE";
-    contentType: string;
-    width: number | null;
-    height: number | null;
-    size: number;
-}
-
 export interface MessageMetadataResponse {
     reactions: Record<string, number>; // e.g., { "like": 10, "love": 5 }
 }

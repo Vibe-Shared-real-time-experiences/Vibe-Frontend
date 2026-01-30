@@ -1,9 +1,12 @@
 import { useState } from "react";
-import type { AttachmentResponse } from "../../../../types/media/attachment";
+import type { UIAttachment } from "../../../../types/chat/ui/message";
 
-export const VisualAttachment = ({ attachment, isSingle }: { attachment: AttachmentResponse, isSingle: boolean }) => {
+export const VisualAttachment = ({ attachment, isSingle }: { attachment: UIAttachment, isSingle: boolean }) => {
     const [isError, setIsError] = useState(false);
-    const isVideo = attachment.contentType.startsWith('video/');
+    const isVideo = attachment.contentType?.startsWith('video/');
+
+    console.log("Attachment: ", attachment);
+
 
     if (isError) return null;
 
@@ -12,6 +15,7 @@ export const VisualAttachment = ({ attachment, isSingle }: { attachment: Attachm
         : "16 / 9";
 
     return (
+
         <div
             className={`relative rounded-md overflow-hidden bg-black border border-gray-700/50 ${isSingle ? '' : 'aspect-square'}`}
             style={isSingle ? {
@@ -34,6 +38,13 @@ export const VisualAttachment = ({ attachment, isSingle }: { attachment: Attachm
                     loading="lazy"
                     onError={() => setIsError(true)}
                 />
+            )}
+
+            {/* Sending spinner */}
+            {attachment.isUploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                    <div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                </div>
             )}
         </div>
     );

@@ -1,5 +1,5 @@
 import { Hash, Settings, Users } from 'lucide-react'
-import type { ChannelResponse } from '../../../../../types/chat/channel';
+import type { ChannelResponse } from '../../../../../types/chat/api/channel';
 
 const ChannelItem = ({ channel, isActive, onChangeChannel }: { channel: ChannelResponse; isActive: boolean; onChangeChannel: (channelId: string) => void }) => {
     return (

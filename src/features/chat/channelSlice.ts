@@ -1,8 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { CategoryResponse } from "../../types/chat/category";
-import type { ChannelResponse } from "../../types/chat/channel";
+import type { CategoryResponse } from "../../types/chat/api/category";
+import type { ChannelResponse } from "../../types/chat/api/channel";
 import { flatChannelFormCategories } from "../../utils/channelUtil";
-import type { ServerDetailResponse } from "../../types/chat/server";
+import type { ServerDetailResponse } from "../../types/chat/api/server";
 import { getServerById } from "./serverThunk";
 
 interface ChannelState {
