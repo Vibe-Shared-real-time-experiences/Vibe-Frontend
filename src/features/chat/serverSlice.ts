@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { createServer, getServerById, getServers } from "./serverThunk";
-import type { ServerResponse } from "../../types/chat/server";
+import type { ServerResponse } from "http";
 
 interface ServerState {
     servers: ServerResponse[];

@@ -1,16 +1,17 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { login, register } from "./authThunk";
-import type { LoginResponse, RegisterResponse, UserBaseInfo } from "../../types/auth";
+import { fetchUserProfile, login, register } from "./authThunk";
+import type { LoginResponse, RegisterResponse } from "../../types/auth";
+import type { UserProfileResponse } from "../../types/user/api/userProfile";
 
 interface AuthState {
-    user: UserBaseInfo | null;
+    user: UserProfileResponse | null;
     isLoading: boolean;
     isAuthenticated: boolean;
     error: string | null;
 }
 
 const initialState: AuthState = {
-    user: {} as UserBaseInfo,
+    user: null,
     isLoading: false,
     isAuthenticated: false,
     error: null,
@@ -26,8 +27,6 @@ export const authSlice = createSlice({
             // Handle successful login
             state.isAuthenticated = true;
             state.isLoading = false;
-
-            state.user = action.payload.user;
             state.error = null;
 
             localStorage.setItem("access_token", action.payload.accessToken);
@@ -47,8 +46,6 @@ export const authSlice = createSlice({
             // Handle successful registration
             state.isAuthenticated = true;
             state.isLoading = false;
-
-            state.user = action.payload.user;
             state.error = null;
 
             localStorage.setItem("access_token", action.payload.accessToken);
@@ -61,6 +58,11 @@ export const authSlice = createSlice({
 
             state.user = null;
             state.error = action.payload || "Registration failed";
+        });
+
+        // FETCH USER PROFILE
+        builder.addCase(fetchUserProfile.fulfilled, (state, action: PayloadAction<UserProfileResponse>) => {
+            state.user = action.payload;
         });
     }
 });
