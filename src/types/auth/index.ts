@@ -7,7 +7,6 @@ export interface LoginRequest {
 export interface LoginResponse {
     accessToken: string;
     refreshToken: string;
-    user: UserBaseInfo;
 }
 
 export interface UserBaseInfo {
@@ -28,5 +27,4 @@ export interface RegisterRequest {
 export interface RegisterResponse {
     accessToken: string;
     refreshToken: string;
-    user: UserBaseInfo;
 }

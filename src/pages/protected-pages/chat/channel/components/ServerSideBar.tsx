@@ -6,6 +6,7 @@ import CreateServerForm from './CreateServerForm';
 import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { getServerById, getServers } from '../../../../../features/chat/serverThunk';
 import { flatChannelFormCategories } from '../../../../../utils/channelUtil';
+import { socketService } from '../../../../../services/socketService';
 
 export default function ServerSidebar() {
     const navigate = useNavigate();
@@ -14,11 +15,19 @@ export default function ServerSidebar() {
     const { servers } = useAppSelector((state) => state.server);
     const { currentServerId } = useAppSelector((state) => state.channel);
 
+    const token = localStorage.getItem('access_token');
+
     useEffect(() => {
         if (servers.length === 0) {
             dispatch(getServers());
         }
     }, [dispatch, servers.length]);
+
+    useEffect(() => {
+        if (token && !socketService.isConnected()) {
+            socketService.connect(token);
+        }
+    }, [token])
 
     const [isOpen, setOpen] = useState(false);
 

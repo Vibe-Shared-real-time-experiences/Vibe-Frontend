@@ -27,7 +27,7 @@ export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { chan
 
 export const sendMessage = createAsyncThunk(
     "message/send",
-    async ({ channelId, content, files }: { channelId: string, content: string, files: File[] }, thunkAPI) => {
+    async ({ channelId, senderId, content, files }: { channelId: string, senderId: string, content: string, files: File[] }, thunkAPI) => {
         const key = uuidv4();
         const tempId = key;
 
@@ -51,6 +51,7 @@ export const sendMessage = createAsyncThunk(
                 });
 
             return {
+                senderId,
                 realMessage: response.data,
                 attachmentResponses: attachmentResponses
             }

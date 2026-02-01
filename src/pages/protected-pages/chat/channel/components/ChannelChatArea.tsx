@@ -10,6 +10,7 @@ const ChannelChatArea = () => {
     const { channelId, serverId } = useParams();
     const dispatch = useAppDispatch();
 
+    const currentUserId = useAppSelector((state) => state.auth.user?.id);
     const currentChannel = useAppSelector((state) => state.channel.channelsMap[channelId || '']);
     const { messagesByChannelId } = useAppSelector((state) => state.message);
     const { channelMembers } = useAppSelector((state) => state.member);
@@ -37,7 +38,7 @@ const ChannelChatArea = () => {
             dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null }));
         }
 
-    }, [dispatch, channelId, serverId]);
+    }, [dispatch, channelId, serverId, messagesByChannelId]);
 
     const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
         const container = e.currentTarget;
@@ -89,6 +90,7 @@ const ChannelChatArea = () => {
         try {
             await dispatch(sendMessage({
                 channelId: channelId!,
+                senderId: currentUserId!,
                 content: content,
                 files: files
             }))

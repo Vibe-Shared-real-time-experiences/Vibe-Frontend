@@ -5,9 +5,6 @@ export const VisualAttachment = ({ attachment, isSingle }: { attachment: UIAttac
     const [isError, setIsError] = useState(false);
     const isVideo = attachment.contentType?.startsWith('video/');
 
-    console.log("Attachment: ", attachment);
-
-
     if (isError) return null;
 
     const aspectRatio = (attachment.width && attachment.height)

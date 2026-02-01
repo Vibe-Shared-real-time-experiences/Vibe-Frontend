@@ -21,7 +21,7 @@ const MessageItem = ({ message, channelMembers }: { message: UIMessage; channelM
 
             {/* Avatar */}
             <div className="w-10 h-10 rounded-full bg-indigo-500 mt-1 shrink-0 cursor-pointer hover:drop-shadow-md transition">
-                <img src={channelMembers?.[message.senderId]?.avatarUrl || ''} />
+                <img src={channelMembers?.[message.senderId]?.avatarUrl} />
             </div>
 
             <div className="flex-1 min-w-0">

@@ -1,5 +1,5 @@
 import axiosClient from "../../api/client"
-import type { CreateServerRequest, ServerDetailResponse, ServerResponse } from "../../types/chat/server";
+import type { CreateServerRequest, ServerDetailResponse, ServerResponse } from "../../types/chat/api/server";
 import type { ApiResponse } from "../../types/common/apiResponse";
 
 export const fetchServers = () => {

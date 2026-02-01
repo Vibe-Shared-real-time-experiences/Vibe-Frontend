@@ -1,6 +1,7 @@
 import axiosClient from '../../api/client';
-import type { CreateMessageRequest, CreateMessageResponse } from './../../types/chat/message';
-import type { ChannelMessagesResponse } from '../../types/chat/message';
+import type { CreateMessageResponse } from './../../types/chat/api/message';
+import type { ChannelMessagesResponse } from '../../types/chat/api/message';
+import type { CreateMessageRequest } from '../../types/chat/request/message';
 import type { ApiResponse } from '../../types/common/apiResponse';
 import type { CursorResponse } from '../../types/common/cursorResponse';
 

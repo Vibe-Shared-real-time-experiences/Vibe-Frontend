@@ -1,7 +1,9 @@
 import type { UIAttachment, UIChannelMessages } from './../../types/chat/ui/message';
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { fetchMessagesByChannelId, sendMessage } from "./messageThunk";
 import type { UIMessage } from "../../types/chat/ui/message";
+import type { MessageResponse } from '../../types/chat/api/message';
+import type { WsMessageResponse } from '../../types/socket';
 interface MessageState {
     messagesByChannelId: Record<string, UIChannelMessages | null>;
     isLoading: boolean;
@@ -18,8 +20,10 @@ export const messageSlice = createSlice({
     name: "message",
     initialState: initialState,
     reducers: {
-        addRealTimeMessage: (state, action) => {
-            const { channelId, message } = action.payload;
+        addRealTimeMessage: (state, action: PayloadAction<WsMessageResponse>) => {
+            const channelId = action.payload.channelId;
+            const message = action.payload;
+
             if (!state.messagesByChannelId[channelId]) {
                 state.messagesByChannelId[channelId] = {
                     messages: [],
@@ -29,12 +33,37 @@ export const messageSlice = createSlice({
                 };
             }
 
-            state.messagesByChannelId[channelId].messages?.push(message);
+            const existed = state.messagesByChannelId[channelId]!.messages!.find(m => m.id == message.id);
+            if (existed) return;
+
+            const UIMessage = {
+                id: message.id,
+                channelId: message.channelId,
+                content: message.content,
+                senderId: message.author.id,
+                createdAt: message.createdAt,
+                attachments: message.attachments?.map(att => ({
+                    id: att.id,
+                    url: att.url,
+                    type: att.type,
+                })) as UIAttachment[],
+                metadata: null,
+            } as UIMessage;
+
+            console.log("add new msg to reducer");
+
+
+            state.messagesByChannelId[channelId].messages?.unshift(UIMessage);
         },
 
-        addOptimisticMessage: (state, action) => {
+        addTempNewMessage: (state, action) => {
             const { channelId } = action.payload;
-            state.messagesByChannelId[channelId]!.messages!.push(action.payload);
+            const message = action.payload;
+
+            const existed = state.messagesByChannelId[channelId]!.messages!.find(m => m.id === message.id);
+            if (existed) return;
+
+            state.messagesByChannelId[channelId]!.messages!.unshift(action.payload);
         }
     },
     extraReducers: (builder) => {
@@ -80,7 +109,7 @@ export const messageSlice = createSlice({
 
         // SEND MESSAGE
         builder.addCase(sendMessage.pending, (state, action) => {
-            const { channelId, content, files } = action.meta.arg;
+            const { channelId, senderId, content, files } = action.meta.arg;
             const tempId = action.meta.requestId;
 
             const previewAttachments: UIAttachment[] = files.map(file => {
@@ -102,7 +131,7 @@ export const messageSlice = createSlice({
                 id: tempId, // Using dispatch requestId as temp ID
                 channelId,
                 content: content,
-                senderId: "me", // Placeholder, replace with actual sender ID
+                senderId: senderId,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 attachments: previewAttachments.map(att => ({
@@ -126,9 +155,6 @@ export const messageSlice = createSlice({
 
             state.isLoading = true;
             state.error = null;
-
-            // 3. Cleanup preview URLs 
-            // previewAttachments.forEach(att => URL.revokeObjectURL(att.url));
         });
         builder.addCase(sendMessage.fulfilled, (state, action) => {
             const tempId = action.meta.requestId;
@@ -172,4 +198,4 @@ export const messageSlice = createSlice({
 })
 
 export default messageSlice.reducer;
-export const { addRealTimeMessage, addOptimisticMessage } = messageSlice.actions;
+export const { addRealTimeMessage, addTempNewMessage } = messageSlice.actions;
