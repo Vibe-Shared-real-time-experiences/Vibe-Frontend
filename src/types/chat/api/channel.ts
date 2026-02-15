@@ -9,3 +9,10 @@ export interface ChannelResponse {
     publicAccess: boolean;
     active: boolean;
 }
+
+export interface ChannelUnreadResponse {
+    channelId: string;
+    lastMessageId: string;
+    lastReadMessageId: string;
+    unread: boolean;
+}

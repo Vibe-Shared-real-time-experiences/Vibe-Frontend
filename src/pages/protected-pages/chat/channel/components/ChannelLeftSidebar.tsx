@@ -1,14 +1,24 @@
-import { useAppSelector } from '../../../../../features/hooks';
+import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { ChevronDown, Plus, Users } from 'lucide-react'
 import ChannelItem from './ChannelItem';
 import { useNavigate, useParams } from 'react-router-dom';
 import { setActiveChannel } from '../../../../../features/chat/channelSlice';
+import { useEffect } from 'react';
+import { fetchUnreadChannels } from '../../../../../features/chat/unreadStateThunk';
 
 const ChannelLeftSidebar = () => {
 
-  const { channelId } = useParams();
+  const { channelId, serverId } = useParams();
   const { categories, currentServerId, channelsMap } = useAppSelector((state) => state.channel);
+  const { user } = useAppSelector((state) => state.auth);
   const { servers } = useAppSelector((state) => state.server);
+  const { unreadChannel } = useAppSelector((state) => state.unreadState);
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fetchUnreadChannels(serverId!));
+  }, [dispatch, serverId]);
 
   const navigate = useNavigate();
 
@@ -44,7 +54,12 @@ const ChannelLeftSidebar = () => {
             </div>
             <div className="space-y-0.5">
               {category.channels.map((channel) => (
-                <ChannelItem key={channel.id} channel={channel} isActive={channelId == channel.id} onChangeChannel={handleOnchangeChannel} />
+                <ChannelItem
+                  key={channel.id}
+                  channel={channel}
+                  isActive={channelId == channel.id}
+                  isUnread={unreadChannel?.[channel.id]?.unread || false}
+                  onChangeChannel={handleOnchangeChannel} />
               ))}
             </div>
           </div>
@@ -55,8 +70,8 @@ const ChannelLeftSidebar = () => {
       <div className="h-[52px] bg-[#232428] flex items-center px-2 gap-2">
         <div className="w-8 h-8 rounded-full bg-gray-500"></div>
         <div className="flex-1">
-          <div className="text-xs font-bold text-white">Test</div>
-          <div className="text-[10px] text-gray-400">#1234</div>
+          <div className="text-xs font-bold text-white">{user?.displayName}</div>
+          <div className="text-[10px] text-gray-400">#{user?.bio}</div>
         </div>
       </div>
     </div>

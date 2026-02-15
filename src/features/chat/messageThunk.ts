@@ -1,18 +1,19 @@
 import { mediaService } from '../../services/media/mediaService';
 import type { ChannelMessages } from '../../types/chat/api/message';
+import type { FetchMessagesRequest } from '../../types/chat/request/message';
 import type { MessageAttachmentRequest } from '../../types/media/attachment';
 import * as messageService from './../../services/chat/messageService';
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from 'uuid';
-export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, { channelId: string; cursor: string | null }, { rejectValue: string }>(
+export const fetchMessagesByChannelId = createAsyncThunk<ChannelMessages, FetchMessagesRequest, { rejectValue: string }>(
     "message/fetchMessages",
-    async ({ channelId, cursor }: { channelId: string; cursor: string | null }, thunkApi) => {
+    async (fetchMessagesRequest: FetchMessagesRequest, thunkApi) => {
         try {
-            const response = await messageService.fetchMessagesByChannelId({ channelId, cursor });
+            const response = await messageService.fetchMessagesByChannelId(fetchMessagesRequest);
 
             const channelMessages: ChannelMessages = {
                 messages: response.data.items.messages,
-                senders: response.data.items.senders,
+                memberInfos: response.data.items.memberInfos,
                 nextCursor: response.data.nextCursor,
                 hasMore: response.data.hasMore,
             };

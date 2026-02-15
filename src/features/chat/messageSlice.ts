@@ -2,7 +2,6 @@ import type { UIAttachment, UIChannelMessages } from './../../types/chat/ui/mess
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { fetchMessagesByChannelId, sendMessage } from "./messageThunk";
 import type { UIMessage } from "../../types/chat/ui/message";
-import type { MessageResponse } from '../../types/chat/api/message';
 import type { WsMessageResponse } from '../../types/socket';
 interface MessageState {
     messagesByChannelId: Record<string, UIChannelMessages | null>;
@@ -27,9 +26,11 @@ export const messageSlice = createSlice({
             if (!state.messagesByChannelId[channelId]) {
                 state.messagesByChannelId[channelId] = {
                     messages: [],
-                    senders: [],
-                    nextCursor: null,
-                    hasMore: false,
+                    memberInfos: [],
+                    headCursor: null,
+                    tailCursor: null,
+                    hasMoreOlder: false,
+                    hasMoreNewer: false,
                 };
             }
 
@@ -52,7 +53,6 @@ export const messageSlice = createSlice({
 
             console.log("add new msg to reducer");
 
-
             state.messagesByChannelId[channelId].messages?.unshift(UIMessage);
         },
 
@@ -74,9 +74,11 @@ export const messageSlice = createSlice({
             if (!state.messagesByChannelId[channelId]) {
                 state.messagesByChannelId[channelId] = {
                     messages: [],
-                    senders: [],
-                    nextCursor: null,
-                    hasMore: true,
+                    memberInfos: [],
+                    headCursor: null,
+                    tailCursor: null,
+                    hasMoreOlder: false,
+                    hasMoreNewer: false,
                 };
             }
 
@@ -85,18 +87,37 @@ export const messageSlice = createSlice({
         });
         builder.addCase(fetchMessagesByChannelId.fulfilled, (state, action) => {
             const { channelId } = action.meta.arg;
+            const direction = action.meta.arg.direction;
             // New if no existing messages
             if (!state.messagesByChannelId[channelId]) {
                 state.messagesByChannelId[channelId] = action.payload;
             } else {
-                // Append messages to existing ones
-                state.messagesByChannelId[channelId]!.messages = [
-                    ...(state.messagesByChannelId[channelId]!.messages ?? []),
-                    ...(action.payload.messages ?? []),
-                ];
+                // Append or prepend messages based on direction
+                const existingMessages = state.messagesByChannelId[channelId]?.messages || [];
+                let newMessagesList = [] as UIMessage[];
 
-                state.messagesByChannelId[channelId].nextCursor = action.payload.nextCursor;
-                state.messagesByChannelId[channelId].hasMore = action.payload.hasMore;
+                if (direction === "BEFORE") {
+                    newMessagesList = [
+                        ...existingMessages,
+                        ...action.payload.messages!,
+                    ];
+                    state.messagesByChannelId[channelId]!.headCursor = action.payload.nextCursor;
+                    state.messagesByChannelId[channelId]!.hasMoreOlder = action.payload.hasMore;
+                } else if (direction === "AFTER") {
+                    newMessagesList = [
+                        ...action.payload.messages!,
+                        ...existingMessages,
+                    ];
+                    state.messagesByChannelId[channelId]!.tailCursor = action.payload.nextCursor;
+                    state.messagesByChannelId[channelId]!.hasMoreNewer = action.payload.hasMore;
+                }
+
+                const uniqueMessages = Array.from(
+                    new Map(newMessagesList.map(msg => [msg.id, msg])).values()
+                );
+
+                // Update state
+                state.messagesByChannelId[channelId].messages = uniqueMessages;
 
                 state.isLoading = false;
                 state.error = null;
@@ -146,9 +167,11 @@ export const messageSlice = createSlice({
             if (!state.messagesByChannelId[channelId]) {
                 state.messagesByChannelId[channelId] = {
                     messages: [],
-                    senders: [],
-                    nextCursor: null,
-                    hasMore: false,
+                    memberInfos: [],
+                    headCursor: null,
+                    tailCursor: null,
+                    hasMoreOlder: false,
+                    hasMoreNewer: false,
                 }
             }
             state.messagesByChannelId[channelId]!.messages!.unshift(tempMessage);

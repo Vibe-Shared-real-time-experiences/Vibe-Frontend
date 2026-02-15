@@ -16,9 +16,9 @@ class SocketService {
         this.client = new Client({
             brokerURL: import.meta.env.VITE_REACT_APP_SOCKET_URL || 'http://localhost:8080/ws',
             reconnectDelay: 5000,
-            debug: (str) => {
-                console.log('[STOMP]: ' + str);
-            },
+            // debug: (str) => {
+            //     console.log('[STOMP]: ' + str);
+            // },
         });
 
         this.client.onConnect = () => {
@@ -71,7 +71,6 @@ class SocketService {
 
     unsubscribeCurrentServer() {
         if (this.currentServerSub) {
-            console.log('🔌 Unsubscribing form previous Server');
             this.currentServerSub.unsubscribe();
             this.currentServerSub = null;
         }
@@ -82,8 +81,6 @@ class SocketService {
         if (!this.connected) return;
 
         this.currentChannelSubs = channelId.map((id) => {
-            console.log(`Subscribing to Channel: ${id}`);
-
             const destination = `${CHANNEL_TOPIC_PREFIX}${id}`;
             return this.client.subscribe(`${destination}`, (message: IMessage) => {
                 if (message.body) {
@@ -96,7 +93,6 @@ class SocketService {
 
     unsubscribeCurrentChannel() {
         if (this.currentChannelSubs) {
-            console.log('🔌 Unsubscribing from previous Channel');
             this.currentChannelSubs.forEach((sub) => sub.unsubscribe());
             this.currentChannelSubs = null;
         }

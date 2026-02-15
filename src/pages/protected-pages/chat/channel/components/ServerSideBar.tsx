@@ -38,7 +38,6 @@ export default function ServerSidebar() {
 
         const serverDetail = await dispatch(getServerById(serverId)).unwrap();
         const { currentChannel } = flatChannelFormCategories(serverDetail);
-
         if (currentChannel) {
             navigate(`/channels/${serverDetail.id}/${currentChannel.id}`);
         } else {

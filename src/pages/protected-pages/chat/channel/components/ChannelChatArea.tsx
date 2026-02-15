@@ -1,10 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
 import { fetchMessagesByChannelId, sendMessage } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
 import { ChatInput } from '../../components/ChatInput';
 import MessageItem from '../../components/MessageItem';
+import { markChannelAsRead } from '../../../../../features/chat/unreadStateThunk';
+import { debounce } from 'lodash';
 
 const ChannelChatArea = () => {
     const { channelId, serverId } = useParams();
@@ -12,73 +14,191 @@ const ChannelChatArea = () => {
 
     const currentUserId = useAppSelector((state) => state.auth.user?.id);
     const currentChannel = useAppSelector((state) => state.channel.channelsMap[channelId || '']);
-    const { messagesByChannelId } = useAppSelector((state) => state.message);
-    const { channelMembers } = useAppSelector((state) => state.member);
+    const { messagesByChannelId, isLoading: isLoadingMessages } = useAppSelector((state) => state.message);
+    const { channelMembers, isLoading: isLoadingMembers } = useAppSelector((state) => state.member);
+    const { unreadChannel } = useAppSelector((state) => state.unreadState);
 
     const channelData = channelId ? messagesByChannelId[channelId] : null;
     const currentMessages = channelData?.messages || [];
-    const nextCursor = channelData?.nextCursor;
 
     const fetchingChannelIdRef = useRef<string | null>(null);
-
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const prevScrollHeightRef = useRef(0);
+    const isChannelInitializedRef = useRef(false);
+    const isAtBottomRef = useRef(true);
+
+    // console.log(unreadChannel?.[channelId!])
+    // const unreadInfo = unreadChannel?.[channelId!] ?? null;
+    // const lastReadId = unreadInfo?.lastReadMessageId ?? 0;
+    // const hasUnread = unreadInfo?.unread ?? false;
+    // const startMessage = channelData?.messages?.find(m => m.id > lastReadId);
+
+    const SCROLL_THRESHOLD = 100;
+    const { messages, headCursor, tailCursor, hasMoreOlder, hasMoreNewer } = channelData || {};
 
     const [isFetchingOld, setIsFetchingOld] = useState(false);
+    const [isFetchingNew, setIsFetchingNew] = useState(false);
+
+    const [showScrollDownBtn, setShowScrollDownBtn] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [isMemberListOpen, setIsMemberListOpen] = useState(false);
 
     // 1. Fetch message when first time load or change channel
     useEffect(() => {
+        // dispatch(fetchUnreadStateByChannelId(channelId!));
+
+        prevScrollHeightRef.current = 0;
 
         const isNoData = channelId !== null && messagesByChannelId[channelId!] == null
-        const isFetching = fetchingChannelIdRef.current !== channelId;
+        const isChangeChannel = fetchingChannelIdRef.current !== channelId;
 
-        if (channelId && isNoData && isFetching) {
-            fetchingChannelIdRef.current = channelId;
-            prevScrollHeightRef.current = 0;
-            dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null }));
+        if (isNoData && isChangeChannel) {
+            isChannelInitializedRef.current = false;
+            fetchingChannelIdRef.current = channelId!;
+            dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null, direction: "BEFORE" }));
         }
-
     }, [dispatch, channelId, serverId, messagesByChannelId]);
 
-    const handleScroll = async (e: React.UIEvent<HTMLDivElement>) => {
-        const container = e.currentTarget;
-
-        if (container.scrollTop < 10 && !isFetchingOld && nextCursor) {
-            setIsFetchingOld(true);
-            prevScrollHeightRef.current = container.scrollHeight;
-
-            try {
-                await dispatch(fetchMessagesByChannelId({
-                    channelId: channelId!,
-                    cursor: nextCursor
-                })).unwrap();
-            } catch (err) {
-                console.error("Failed to load more messages", err);
-            } finally {
-                setIsFetchingOld(false);
-            }
-        }
-    };
-
+    // 3. Layout Effect (for scroll position adjustments)
     useLayoutEffect(() => {
         const container = chatContainerRef.current;
-        if (!container) return;
+        if (!container || !messages) return;
 
         // TRƯỜNG HỢP 1: Đang load tin cũ (Pagination)
         // Logic: Tính toán độ chênh lệch để giữ nguyên mắt đọc
         if (prevScrollHeightRef.current > 0) {
-            const newHeight = container.scrollHeight;
-            const diff = newHeight - prevScrollHeightRef.current;
-            container.scrollTop = diff;
+            const newScrollHeight = container.scrollHeight;
+            const diff = newScrollHeight - prevScrollHeightRef.current;
+
+            if (diff > 0) {
+                container.scrollTop = container.scrollTop + diff;
+            }
+
             prevScrollHeightRef.current = 0;
+            return
         }
 
-        // TRƯỜNG HỢP 2: Mới vào kênh hoặc Chat Realtime
-        // Logic: Không có dấu hiệu load cũ -> Mặc định cuộn xuống đáy
-        else {
-            container.scrollTop = container.scrollHeight;
+        // // TRƯỜNG HỢP 2: Mới vào kênh (tìm tin nhắn mới nhất)
+        // if (!isChannelInitializedRef.current) {
+
+        //     if (!unreadInfo) {
+        //         return;
+        //     }
+
+        //     if (hasUnread) {
+        //         if (startMessage) {
+        //             setTimeout(() => {
+        //                 const el = document.getElementById(`msg-${startMessage.id}`);
+        //                 if (el) container.scrollTop = el.offsetTop - 20;
+        //                 else container.scrollTop = 0;
+        //             }, 100);
+        //         } else {
+        //             container.scrollTop = 0;
+        //         }
+        //     } else {
+        //         container.scrollTop = container.scrollHeight;
+        //     }
+        // } else {
+        //     console.log('Scroll to Bottom for new channel');
+        //     // Wait for DOM update
+        //     setTimeout(() => {
+        //         if (chatContainerRef.current) {
+        //             chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        //         }
+        //     }, 100);
+        // }
+
+        // TRƯỜNG HỢP 2: Mới vào kênh
+        if (!isChannelInitializedRef.current) {
+            // Wait for DOM update
+            setTimeout(() => {
+                if (chatContainerRef.current) {
+                    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                }
+            }, 100);
         }
-    }, [currentMessages.length, channelId]);
+
+        // Trường hợp 3: Tin nhắn mới đến trong kênh đã được khởi tạo
+        const lastMessage = messages[messages.length - 1];
+        const isMyMessage = lastMessage?.senderId === currentUserId;
+
+        if (isAtBottomRef.current || isMyMessage) {
+            container.scrollTop = container.scrollHeight;
+
+            setShowScrollDownBtn(false);
+            setUnreadCount(0);
+        } else {
+            setShowScrollDownBtn(true);
+            setUnreadCount(unreadCount + 1);
+        }
+
+        isChannelInitializedRef.current = true;
+        // Note: Scroll Down (Load Future) does not need to be handled here
+
+    }, [messages, channelId]);
+
+    // 2. Handle Scroll 
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const container = e.target as HTMLDivElement;
+        const { scrollTop, scrollHeight, clientHeight } = container;
+
+        // SCROLL UP (Load History)
+        if (scrollTop < SCROLL_THRESHOLD && !isFetchingOld && hasMoreOlder && headCursor) {
+
+            prevScrollHeightRef.current = scrollHeight;
+
+            dispatch(fetchMessagesByChannelId({
+                channelId: channelId!,
+                cursor: headCursor,
+                direction: 'BEFORE'
+            }));
+        }
+
+        // SCROLL DOWN (Load Future)
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        if (distanceFromBottom < SCROLL_THRESHOLD && !isFetchingNew && hasMoreNewer && tailCursor) {
+            dispatch(fetchMessagesByChannelId({
+                channelId: channelId!,
+                cursor: tailCursor,
+                direction: 'AFTER'
+            }));
+        }
+
+        // --- LOGIC MARK AS READ ---
+        // Find last message ID in bottom viewport
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        isAtBottomRef.current = isNearBottom;
+
+        if (isNearBottom) {
+            const lastMessageId = unreadChannel?.[channelId!].lastMessageId
+            // Trigger debounce update
+            updateReadStatus(channelId!, lastMessageId!);
+
+            // Hide scroll down button
+            setShowScrollDownBtn(false);
+        }
+    }// Throttle 200ms: Check scroll position every 200ms
+
+    const scrollToBottom = () => {
+        const container = chatContainerRef.current;
+        if (container) {
+            // Smooth scroll cho nó nghệ
+            container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            setShowScrollDownBtn(false);
+            setUnreadCount(0);
+        }
+    };
+
+    const updateReadStatus = useMemo(() =>
+        debounce((channelId: string, messageId: string) => {
+            if (messageId <= unreadChannel?.[channelId!]?.lastReadMessageId) {
+                return;
+            }
+
+            dispatch(markChannelAsRead({ userId: currentUserId!, channelId, lastReadMessageId: messageId }));
+        }, 1000), // Only trigger after 1s user stop scrolling
+        [unreadChannel]
+    );
 
     const [isSending, setIsSending] = useState(false);
 
@@ -102,8 +222,6 @@ const ChannelChatArea = () => {
         }
     };
 
-    const [isMemberListOpen, setIsMemberListOpen] = useState(false);
-
     return (
         <>
             <ChannelChatHeader title={currentChannel?.name ? `#${currentChannel.name}` : 'Channel'} onOpenChannelMember={() => setIsMemberListOpen(!isMemberListOpen)} />
@@ -111,7 +229,7 @@ const ChannelChatArea = () => {
             <div
                 ref={chatContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 flex flex-col overflow-y-auto p-4 space-y-4"
+                className="relative flex-1 flex flex-col overflow-y-auto p-4 space-y-4"
             >
                 {/* Loading Indicator */}
                 {isFetchingOld && (
@@ -121,17 +239,38 @@ const ChannelChatArea = () => {
                 )}
 
                 {/* Out of messages */}
-                {!nextCursor && currentMessages.length > 0 && (
+                {!hasMoreOlder && currentMessages.length > 0 && (
                     <div className="text-center py-4 text-gray-500 text-xs">
                         This is the start of the conversation.
                     </div>
                 )}
 
                 {/* Render messages */}
-                {[...currentMessages].reverse().map((message) => (
-                    <MessageItem key={message.id} message={message} channelMembers={channelMembers} />
-                ))}
+
+                {[...currentMessages].reverse().map((message) => {
+                    // const isUnreadMsg = hasUnread
+                    //     && message.id == String(Number(unreadChannel?.[channelId!].lastReadMessageId || 0) + 1);
+                    return (
+                        <MessageItem
+                            key={message.id}
+                            message={message}
+                            isUnread={false}
+                            channelMembers={channelMembers}
+                        />
+                    )
+                })}
+
             </div>
+
+            {/* --- FLOATING BUTTON --- */}
+            {showScrollDownBtn && (
+                <button
+                    onClick={scrollToBottom}
+                    className="absolute bottom-10 right-10 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all animate-bounce"
+                >
+                    {unreadCount} New Messages ⬇
+                </button>
+            )}
 
             {/* Message Input */}
             <ChatInput
