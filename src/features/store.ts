@@ -7,6 +7,7 @@ import { serverReducer } from "./chat/serverSlice";
 import { channelReducer } from "./chat/channelSlice";
 import memberReducer from "./chat/memberSlice";
 import messageReducer from "./chat/messageSlice";
+import { unreadStateReducer } from "./chat/unreadStateSlice";
 
 const persistConfig = {
     key: "root",
@@ -19,7 +20,8 @@ const rootReducer = combineReducers({
     server: serverReducer,
     channel: channelReducer,
     message: messageReducer,
-    member: memberReducer
+    member: memberReducer,
+    unreadState: unreadStateReducer
 });
 
 

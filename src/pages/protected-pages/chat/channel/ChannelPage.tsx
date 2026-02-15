@@ -1,4 +1,3 @@
-// src/pages/ServerPage.tsx
 import { Outlet, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../features/hooks';
@@ -41,8 +40,6 @@ export default function ChannelPage() {
             socketService.subscribeToChannels(channelIds, (event: WsMessageEvent) => {
                 console.log("Received event for channel:", event);
                 if (event.eventType === 'MESSAGE_CREATED') {
-
-                    console.log("idddddd:", event.data.author.id, currentUserId);
 
                     if (event.data.author.id === currentUserId) {
                         return; // Ignore messages sent by current user

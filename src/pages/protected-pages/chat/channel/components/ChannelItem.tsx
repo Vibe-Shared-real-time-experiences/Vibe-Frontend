@@ -1,7 +1,8 @@
 import { Hash, Settings, Users } from 'lucide-react'
 import type { ChannelResponse } from '../../../../../types/chat/api/channel';
 
-const ChannelItem = ({ channel, isActive, onChangeChannel }: { channel: ChannelResponse; isActive: boolean; onChangeChannel: (channelId: string) => void }) => {
+const ChannelItem = ({ channel, isActive, onChangeChannel, isUnread }: { channel: ChannelResponse; isActive: boolean; onChangeChannel: (channelId: string) => void; isUnread: boolean }) => {
+
     return (
         <div
             onClick={() => onChangeChannel(channel.id)}
@@ -11,9 +12,15 @@ const ChannelItem = ({ channel, isActive, onChangeChannel }: { channel: ChannelR
                 : 'hover:bg-[#35373C] text-gray-400 hover:text-gray-100 cursor-pointer'
                 }`}
         >
+            {/* Channel name */}
             <div className="flex items-center min-w-0">
                 <Hash size={20} className="mr-1.5 text-gray-400 flex-shrink-0" />
-                <span className="font-medium truncate">{channel.name}</span>
+                {/* Small circle before channel name when there are unread messages */}
+                {isUnread && (
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-1 flex-shrink-0"></span>
+                )}
+                {/* Bold this line when have unread messages */}
+                <span className={`font-medium truncate ${isUnread ? 'font-bold text-white' : ''}`}>{channel.name}</span>
             </div>
             <div className={`flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition ${isActive ? 'opacity-100' : ''}`}>
                 <Users size={16} className="text-gray-500 hover:text-gray-300 cursor-pointer" />

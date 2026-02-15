@@ -1,5 +1,5 @@
 export interface MemberSummaryInfo {
-    id: string;
+    memberId: string;
     displayName: string;
     avatarUrl: string;
 }

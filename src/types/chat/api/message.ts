@@ -8,7 +8,7 @@ export interface ChannelMessages extends ChannelMessagesResponse {
 
 export interface ChannelMessagesResponse {
     messages: MessageResponse[] | null;
-    senders: MemberSummaryInfo[] | null;
+    memberInfos: MemberSummaryInfo[] | null;
 }
 
 export interface MessageResponse {
