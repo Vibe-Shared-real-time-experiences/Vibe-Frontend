@@ -16,7 +16,7 @@ const MessageItem = ({ message, channelMembers, isUnread }: { message: UIMessage
     const isSending = message.status === 'SENDING';
     const isError = message.status === 'FAILED';
 
-    console.log("member name: ", channelMembers?.[message.senderId]?.displayName);
+    console.log("member name: ", channelMembers?.[message.authorId]?.displayName);
 
     return (
 
@@ -38,7 +38,7 @@ const MessageItem = ({ message, channelMembers, isUnread }: { message: UIMessage
 
                 {/* Avatar */}
                 <div className="w-10 h-10 rounded-full bg-indigo-500 mt-1 shrink-0 cursor-pointer hover:drop-shadow-md transition">
-                    <img src={channelMembers?.[message.senderId]?.avatarUrl} />
+                    <img src={channelMembers?.[message.authorId]?.avatarUrl} />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -46,7 +46,7 @@ const MessageItem = ({ message, channelMembers, isUnread }: { message: UIMessage
                     {/* Header: Name + time */}
                     <div className="flex items-center gap-2">
                         <span className="text-white text-base font-medium hover:underline cursor-pointer">
-                            {channelMembers ? channelMembers[message.senderId]?.displayName : "Unknown"}
+                            {channelMembers ? channelMembers[message.authorId]?.displayName : "Unknown"}
                         </span>
                         <span className="text-xs text-gray-400">
                             {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit' })}

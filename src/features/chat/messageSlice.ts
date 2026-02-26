@@ -41,7 +41,7 @@ export const messageSlice = createSlice({
                 id: message.id,
                 channelId: message.channelId,
                 content: message.content,
-                senderId: message.author.id,
+                authorId: message.authorId,
                 createdAt: message.createdAt,
                 attachments: message.attachments?.map(att => ({
                     id: att.id,
@@ -152,7 +152,7 @@ export const messageSlice = createSlice({
                 id: tempId, // Using dispatch requestId as temp ID
                 channelId,
                 content: content,
-                senderId: senderId,
+                authorId: senderId,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 attachments: previewAttachments.map(att => ({

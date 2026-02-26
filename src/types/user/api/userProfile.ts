@@ -6,3 +6,9 @@ export interface UserProfileResponse {
     bio: string | null;
     isPublic: boolean;
 }
+
+export interface UserSummaryResponse {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+}

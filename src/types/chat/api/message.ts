@@ -14,7 +14,7 @@ export interface ChannelMessagesResponse {
 export interface MessageResponse {
     id: string;
     channelId: string;
-    senderId: string;
+    authorId: string;
     content: string;
     attachments: MessageAttachmentResponse[] | null;
     metadata: MessageMetadataResponse | null;

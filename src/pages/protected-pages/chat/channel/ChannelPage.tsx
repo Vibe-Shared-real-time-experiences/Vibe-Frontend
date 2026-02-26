@@ -41,7 +41,7 @@ export default function ChannelPage() {
                 console.log("Received event for channel:", event);
                 if (event.eventType === 'MESSAGE_CREATED') {
 
-                    if (event.data.author.id === currentUserId) {
+                    if (event.data.authorId === currentUserId) {
                         return; // Ignore messages sent by current user
                     }
 

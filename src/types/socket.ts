@@ -20,9 +20,10 @@ export interface WsAttachmentResponse {
 
 export interface WsMessageResponse {
     id: string;
-    content: string;
+    authorId: string;
     channelId: string;
-    author: WsUserSummary;
+    content: string;
+    // author: WsUserSummary;
     attachments: WsAttachmentResponse[];
     createdAt: string;
 }

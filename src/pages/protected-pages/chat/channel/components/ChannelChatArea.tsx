@@ -26,6 +26,7 @@ const ChannelChatArea = () => {
     const prevScrollHeightRef = useRef(0);
     const isChannelInitializedRef = useRef(false);
     const isAtBottomRef = useRef(true);
+    const initialScrollTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
 
     // console.log(unreadChannel?.[channelId!])
     // const unreadInfo = unreadChannel?.[channelId!] ?? null;
@@ -47,17 +48,23 @@ const ChannelChatArea = () => {
     useEffect(() => {
         // dispatch(fetchUnreadStateByChannelId(channelId!));
 
-        prevScrollHeightRef.current = 0;
-
         const isNoData = channelId !== null && messagesByChannelId[channelId!] == null
         const isChangeChannel = fetchingChannelIdRef.current !== channelId;
 
         if (isNoData && isChangeChannel) {
+            // Only reset prevScrollHeightRef on channel change, not on every message update
+            prevScrollHeightRef.current = 0;
             isChannelInitializedRef.current = false;
             fetchingChannelIdRef.current = channelId!;
             dispatch(fetchMessagesByChannelId({ channelId: channelId!, cursor: null, direction: "BEFORE" }));
         }
-    }, [dispatch, channelId, serverId, messagesByChannelId]);
+    }, [dispatch, channelId, serverId]);
+
+    // Clear fetching flags when messages update (fetch completes)
+    useEffect(() => {
+        setIsFetchingOld(false);
+        setIsFetchingNew(false);
+    }, [messages]);
 
     // 3. Layout Effect (for scroll position adjustments)
     useLayoutEffect(() => {
@@ -67,6 +74,11 @@ const ChannelChatArea = () => {
         // TRƯỜNG HỢP 1: Đang load tin cũ (Pagination)
         // Logic: Tính toán độ chênh lệch để giữ nguyên mắt đọc
         if (prevScrollHeightRef.current > 0) {
+            if (initialScrollTimeoutIdRef.current) {
+                clearTimeout(initialScrollTimeoutIdRef.current);
+                initialScrollTimeoutIdRef.current = null;
+            }
+
             const newScrollHeight = container.scrollHeight;
             const diff = newScrollHeight - prevScrollHeightRef.current;
 
@@ -111,7 +123,7 @@ const ChannelChatArea = () => {
         // TRƯỜNG HỢP 2: Mới vào kênh
         if (!isChannelInitializedRef.current) {
             // Wait for DOM update
-            setTimeout(() => {
+            initialScrollTimeoutIdRef.current = setTimeout(() => {
                 if (chatContainerRef.current) {
                     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
                 }
@@ -120,7 +132,7 @@ const ChannelChatArea = () => {
 
         // Trường hợp 3: Tin nhắn mới đến trong kênh đã được khởi tạo
         const lastMessage = messages[messages.length - 1];
-        const isMyMessage = lastMessage?.senderId === currentUserId;
+        const isMyMessage = lastMessage?.authorId === currentUserId;
 
         if (isAtBottomRef.current || isMyMessage) {
             container.scrollTop = container.scrollHeight;
@@ -144,7 +156,7 @@ const ChannelChatArea = () => {
 
         // SCROLL UP (Load History)
         if (scrollTop < SCROLL_THRESHOLD && !isFetchingOld && hasMoreOlder && headCursor) {
-
+            setIsFetchingOld(true);
             prevScrollHeightRef.current = scrollHeight;
 
             dispatch(fetchMessagesByChannelId({
@@ -157,6 +169,7 @@ const ChannelChatArea = () => {
         // SCROLL DOWN (Load Future)
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
         if (distanceFromBottom < SCROLL_THRESHOLD && !isFetchingNew && hasMoreNewer && tailCursor) {
+            setIsFetchingNew(true);
             dispatch(fetchMessagesByChannelId({
                 channelId: channelId!,
                 cursor: tailCursor,
