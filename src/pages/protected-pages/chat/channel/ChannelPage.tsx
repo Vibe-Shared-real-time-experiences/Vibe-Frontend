@@ -11,7 +11,7 @@ export default function ChannelPage() {
     const { serverId } = useParams();
     const dispatch = useAppDispatch();
 
-    const { currentServerId, channelsMap, isLoading } = useAppSelector((state) => state.channel);
+    const { currentServerId, channelsMap } = useAppSelector((state) => state.channel);
     const currentUserId = useAppSelector((state) => state.auth.user?.id);
 
     useEffect(() => {
@@ -26,7 +26,7 @@ export default function ChannelPage() {
             socketService.unsubscribeCurrentServer();
 
             socketService.subscribeToServer(serverId, (event: WsMessageEvent) => {
-                // console.log("Received event for server:", event);
+                console.log("Received event for server:", event);
             });
         }
 

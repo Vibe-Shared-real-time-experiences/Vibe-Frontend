@@ -11,7 +11,7 @@ interface ChannelState {
 
     channelsMap: Record<string, ChannelResponse>;
 
-    currentChannel: ChannelResponse | null;
+    currentChannel: ChannelResponse | null | undefined;
     isLoading: boolean;
     error: string | null;
 }

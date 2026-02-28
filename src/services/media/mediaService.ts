@@ -1,6 +1,6 @@
 import axios from "axios";
 import axiosClient from "../../api/client";
-import type { AttachmentResponse, MessageAttachmentRequest } from "../../types/media/attachment";
+import type { MessageAttachmentRequest } from "../../types/media/attachment";
 import { determineAttachmentType, getImageDimensions } from "../../utils/mediaUtil";
 
 export const mediaService = {

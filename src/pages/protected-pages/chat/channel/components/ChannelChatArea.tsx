@@ -14,8 +14,8 @@ const ChannelChatArea = () => {
 
     const currentUserId = useAppSelector((state) => state.auth.user?.id);
     const currentChannel = useAppSelector((state) => state.channel.channelsMap[channelId || '']);
-    const { messagesByChannelId, isLoading: isLoadingMessages } = useAppSelector((state) => state.message);
-    const { channelMembers, isLoading: isLoadingMembers } = useAppSelector((state) => state.member);
+    const { messagesByChannelId } = useAppSelector((state) => state.message);
+    const { channelMembers } = useAppSelector((state) => state.member);
     const { unreadChannel } = useAppSelector((state) => state.unreadState);
 
     const channelData = channelId ? messagesByChannelId[channelId] : null;
@@ -222,7 +222,8 @@ const ChannelChatArea = () => {
 
     const updateReadStatus = useMemo(() =>
         debounce((channelId: string, messageId: string) => {
-            if (messageId <= unreadChannel?.[channelId!]?.lastReadMessageId) {
+            const lastReadMessageId = unreadChannel?.[channelId!]?.lastReadMessageId;
+            if (!lastReadMessageId || messageId <= lastReadMessageId) {
                 return;
             }
 

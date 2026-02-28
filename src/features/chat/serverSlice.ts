@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { createServer, getServerById, getServers } from "./serverThunk";
-import type { ServerResponse } from "http";
+import type { ServerResponse } from "../../types/chat/api/server";
 
 interface ServerState {
     servers: ServerResponse[];
@@ -30,7 +30,7 @@ export const serverSlice = createSlice({
             state.isLoading = false;
             state.servers = action.payload;
         });
-        builder.addCase(getServers.rejected, (state, action: PayloadAction<string>) => {
+        builder.addCase(getServers.rejected, (state, action: PayloadAction<string | undefined>) => {
             state.isLoading = false;
             state.error = action.payload || "Failed to fetch servers";
         });
@@ -44,7 +44,7 @@ export const serverSlice = createSlice({
             state.isLoading = false;
             state.currentServerId = action.payload.id;
         });
-        builder.addCase(getServerById.rejected, (state, action: PayloadAction<string>) => {
+        builder.addCase(getServerById.rejected, (state, action: PayloadAction<string | undefined>) => {
             state.isLoading = false;
             state.error = action.payload || "Failed to fetch server by ID";
         });
@@ -59,7 +59,7 @@ export const serverSlice = createSlice({
             state.servers.push(action.payload);
             state.currentServerId = action.payload.id;
         });
-        builder.addCase(createServer.rejected, (state, action: PayloadAction<string>) => {
+        builder.addCase(createServer.rejected, (state, action: PayloadAction<string | undefined>) => {
             state.isLoading = false;
             state.error = action.payload || "Failed to create server";
         });

@@ -3,7 +3,7 @@ import type { ServerDetailResponse } from "../types/chat/api/server";
 
 export const flatChannelFormCategories = (server: ServerDetailResponse) => {
     const channelsMap: Record<string, ChannelResponse> = {};
-    let firstChannel: ChannelResponse | null = null;
+    let firstChannel: ChannelResponse | undefined;
 
     server.categories.forEach((cat) => {
         if (cat.position === 0 && cat.channels.length > 0) {

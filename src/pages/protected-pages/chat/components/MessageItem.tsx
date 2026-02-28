@@ -1,4 +1,3 @@
-import React from 'react'
 import type { UIMessage } from '../../../../types/chat/ui/message';
 import { Loader2, AlertCircle } from 'lucide-react';
 import type { MemberSummaryInfo } from '../../../../types/chat/api/member';

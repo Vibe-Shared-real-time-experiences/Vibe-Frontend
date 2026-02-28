@@ -1,5 +1,3 @@
-import type { MessageResponse } from "./chat/api/message";
-
 export type WsEventType = 'MESSAGE_CREATED' | 'MESSAGE_UPDATED' | 'MESSAGE_DELETED';
 
 export interface WsEvent<T> {
