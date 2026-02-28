@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { fetchMessagesByChannelId } from "./messageThunk";
+import { fetchMessagesByChannelId, fetchMissingMembers } from "./messageThunk";
 import type { ChannelMessages } from "../../types/chat/api/message";
 import type { MemberSummaryInfo } from "../../types/chat/api/member";
 
@@ -28,10 +28,7 @@ export const memberSlice = createSlice({
             state.error = "";
         });
         builder.addCase(fetchMessagesByChannelId.fulfilled, (state, action) => {
-            const { channelId } = action.meta.arg;
             const channelMessages = action.payload as ChannelMessages;
-
-            console.log("Fetched channel members: ", action.payload);
 
             channelMessages.memberInfos?.forEach((member) => {
                 state.channelMembers[member.memberId] = member;
@@ -43,6 +40,25 @@ export const memberSlice = createSlice({
         builder.addCase(fetchMessagesByChannelId.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message || "Failed to fetch channel members.";
+        });
+
+        // Fetch missing members by ID
+        builder.addCase(fetchMissingMembers.pending, (state) => {
+            state.isLoading = true;
+            state.error = "";
+        });
+        builder.addCase(fetchMissingMembers.fulfilled, (state, action) => {
+            // Merge fetched members into channelMembers cache
+            action.payload.forEach((member) => {
+                state.channelMembers[member.memberId] = member;
+            });
+
+            state.isLoading = false;
+            state.error = "";
+        });
+        builder.addCase(fetchMissingMembers.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message || "Failed to fetch members.";
         });
     }
 });

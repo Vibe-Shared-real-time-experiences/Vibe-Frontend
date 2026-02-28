@@ -18,7 +18,7 @@ export const FileAttachment = ({ attachment }: { attachment: UIAttachment }) => 
             </div>
             <div className="flex-1 min-w-0">
                 <div className="text-sm text-indigo-100 font-medium truncate">
-                    {attachment.url?.split('/').pop()}
+                    {attachment.objectKey?.split('/').pop()}
                 </div>
                 <div className="text-xs text-gray-400">
                     {formatFileSize(attachment.size ?? 0)}
@@ -26,7 +26,7 @@ export const FileAttachment = ({ attachment }: { attachment: UIAttachment }) => 
             </div>
             {/* Download button */}
             <a
-                href={attachment.url}
+                href={attachment.objectKey}
                 target="_blank"
                 rel="noreferrer"
                 className="p-2 text-gray-400 hover:text-white opacity-0 group-hover/file:opacity-100 transition"

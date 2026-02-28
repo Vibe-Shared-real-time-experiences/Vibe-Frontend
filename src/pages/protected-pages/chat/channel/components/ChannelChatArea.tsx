@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../../features/hooks';
 import { useParams } from 'react-router-dom';
-import { fetchMessagesByChannelId, sendMessage } from '../../../../../features/chat/messageThunk';
+import { fetchMessagesByChannelId, sendMessage, fetchMissingMembers } from '../../../../../features/chat/messageThunk';
 import ChannelChatHeader from './ChannelChatHeader';
 import { ChatInput } from '../../components/ChatInput';
 import MessageItem from '../../components/MessageItem';
@@ -26,7 +26,7 @@ const ChannelChatArea = () => {
     const prevScrollHeightRef = useRef(0);
     const isChannelInitializedRef = useRef(false);
     const isAtBottomRef = useRef(true);
-    const initialScrollTimeoutIdRef = useRef<NodeJS.Timeout | null>(null);
+    const initialScrollTimeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // console.log(unreadChannel?.[channelId!])
     // const unreadInfo = unreadChannel?.[channelId!] ?? null;
@@ -65,6 +65,24 @@ const ChannelChatArea = () => {
         setIsFetchingOld(false);
         setIsFetchingNew(false);
     }, [messages]);
+
+    // Fetch missing members when messages are loaded
+    useEffect(() => {
+        if (!messages || messages.length === 0) return;
+
+        // Extract all unique authorIds from messages
+        const authorIds = new Set<string>();
+        messages.forEach((msg) => {
+            if (msg.authorId && !channelMembers[msg.authorId]) {
+                authorIds.add(msg.authorId);
+            }
+        });
+
+        // If there are missing members, fetch them
+        if (authorIds.size > 0) {
+            dispatch(fetchMissingMembers(Array.from(authorIds)));
+        }
+    }, [messages, channelMembers, dispatch]);
 
     // 3. Layout Effect (for scroll position adjustments)
     useLayoutEffect(() => {

@@ -1,5 +1,5 @@
-import type { ChannelResponse } from "../types/chat/channel";
-import type { ServerDetailResponse } from "../types/chat/server";
+import type { ChannelResponse } from "../types/chat/api/channel";
+import type { ServerDetailResponse } from "../types/chat/api/server";
 
 export const flatChannelFormCategories = (server: ServerDetailResponse) => {
     const channelsMap: Record<string, ChannelResponse> = {};

@@ -1,5 +1,5 @@
 export interface MessageAttachmentRequest {
-    url: string;
+    objectKey: string;
     type: "IMAGE" | "VIDEO" | "FILE";
     width?: number;
     height?: number;

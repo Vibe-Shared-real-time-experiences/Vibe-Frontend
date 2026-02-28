@@ -41,9 +41,13 @@ export default function ChannelPage() {
                 console.log("Received event for channel:", event);
                 if (event.eventType === 'MESSAGE_CREATED') {
 
+                    console.log("Received MESSAGE_CREATED event: ", event.data);
+
                     if (event.data.authorId === currentUserId) {
                         return; // Ignore messages sent by current user
                     }
+
+                    console.log("Dispatching real-time message to store: ", event.data);
 
                     // Handle new message event
                     dispatch(addRealTimeMessage(event.data));

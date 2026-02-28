@@ -8,6 +8,12 @@ interface ImportMetaEnv {
   readonly VITE_REACT_APP_SOCKET_URL: string;
   readonly VITE_SERVER_TOPIC_PREFIX: string;
   readonly VITE_CHANNEL_TOPIC_PREFIX: string;
+
+  readonly VITE_REACT_APP_STORAGE_DOMAIN: string;
+
+  readonly VITE_REACT_APP_STORAGE_BUCKET_NAME: string;
+
+
 }
 
 interface ImportMeta {

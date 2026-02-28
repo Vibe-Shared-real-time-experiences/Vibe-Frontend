@@ -22,6 +22,9 @@ export const fetchMessagesByChannelId = async (fetchMessagesRequest: FetchMessag
 
 export const sendMessage = async (channelId: string, createMessageRequest: CreateMessageRequest) => {
     // POST /messages
+
+    console.log("Sending message with attachments: ", createMessageRequest.attachments);
+
     const response = await axiosClient.post<ApiResponse<CreateMessageResponse>>(`/v1/channels/${channelId}/messages`, createMessageRequest);
     if (response.status === 200 || response.status === 201) {
         return response.data;

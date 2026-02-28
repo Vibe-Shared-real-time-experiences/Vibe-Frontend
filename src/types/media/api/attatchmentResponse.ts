@@ -1,5 +1,5 @@
 export interface MessageAttachmentResponse {
-    url: string;
+    objectKey: string;
     type: "IMAGE" | "VIDEO" | "FILE";
     contentType: string;
     width: number | null;

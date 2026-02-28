@@ -11,8 +11,9 @@ export const VisualAttachment = ({ attachment, isSingle }: { attachment: UIAttac
         ? `${attachment.width} / ${attachment.height}`
         : "16 / 9";
 
-    return (
+    const url = `${import.meta.env.VITE_REACT_APP_STORAGE_DOMAIN}/${import.meta.env.VITE_REACT_APP_STORAGE_BUCKET_NAME}/${attachment.objectKey}`;
 
+    return (
         <div
             className={`relative rounded-md overflow-hidden bg-black border border-gray-700/50 ${isSingle ? '' : 'aspect-square'}`}
             style={isSingle ? {
@@ -22,14 +23,14 @@ export const VisualAttachment = ({ attachment, isSingle }: { attachment: UIAttac
         >
             {isVideo ? (
                 <video
-                    src={attachment.url}
+                    src={url}
                     controls
                     className={`w-full h-full ${isSingle ? 'bg-black' : 'object-cover'}`}
                     onError={() => setIsError(true)}
                 />
             ) : (
                 <img
-                    src={attachment.url}
+                    src={url}
                     alt="attachment"
                     className={`w-full h-full ${isSingle ? 'object-contain bg-black/20' : 'object-cover'}`}
                     loading="lazy"
