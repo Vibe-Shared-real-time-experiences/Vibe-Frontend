@@ -1,75 +1,60 @@
-# React + TypeScript + Vite
+# Vibe: Frontend Client (Demo)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Note:** This repository is a lightweight frontend client built specifically to demonstrate the capabilities of the
+> Vibe ecosystem. For the full system architecture, backend optimizations, and performance metrics, please visit
+> our [Vibe Organization README](https://github.com/Vibe-Shared-real-time-experiences).*
 
-Currently, two official plugins are available:
+Welcome to the Vibe Frontend. This application serves as the user interface to showcase the real-time messaging,
+cursor-based pagination, and rich-media upload features powered by the high-performance Vibe Backend.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Demo Features
 
-## React Compiler
+* **Real-time Messaging:** Instantly send and receive messages using HTTP POST for fast writes and WebSocket (STOMP) for
+  real-time event listening.
+* **Infinite Scrolling:** Smoothly navigate through chat history utilizing the backend's Cursor-based Pagination
+* **Rich-Media Attachments:** Upload images and files seamlessly with direct MinIO integration.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Tech Stack
 
-Note: This will impact Vite dev & build performances.
+* **Framework:** React.js
+* **Real-time Client:** `@stomp/stompjs` & `sockjs-client`
+* **HTTP Client:** `axios`
+* **Styling:** TailwindCSS
+* **State Management:** Redux
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Follow these steps to run the demo client locally.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+* **Node.js** (v18+) and **npm** (or yarn/pnpm) installed.
+* The **Vibe Backend** and its infrastructure (PostgreSQL, Redis, MinIO) must be up and running.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Installation
+
+Clone the repository and install the dependencies:
+
+```bash
+cd vibe-frontend
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Environment Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Create a `.env` file in the project root from the provided `example.env`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp example.env .env
 ```
+
+Edit `.env` with your configuration
+
+### 3. Run the Development Server
+
+```bash
+npm run dev
+```
+
+This will start the frontend on `http://localhost:3000`. You can log in with the credentials of a user created in the
+backend and start testing the real-time chat features.
