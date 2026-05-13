@@ -2,6 +2,8 @@ import { useState } from "react";
 import type { UIAttachment } from "../../../../types/chat/ui/message";
 
 export const VisualAttachment = ({ attachment, isSingle }: { attachment: UIAttachment, isSingle: boolean }) => {
+    if (!attachment.objectKey) return null;
+
     const [isError, setIsError] = useState(false);
     const isVideo = attachment.contentType?.startsWith('video/');
 

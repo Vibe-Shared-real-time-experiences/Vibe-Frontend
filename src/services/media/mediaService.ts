@@ -35,7 +35,7 @@ export const mediaService = {
             }
         );
 
-        const { url, objectKey } = presignedRes.data.data; // Tuỳ cách BE ông bọc response
+        const { url, objectKey } = presignedRes.data.data;
 
         // 3. Upload file directly to Storage using the presigned URL
         await axios.put(url, file, {

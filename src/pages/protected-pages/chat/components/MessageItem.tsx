@@ -15,8 +15,6 @@ const MessageItem = ({ message, channelMembers, isUnread }: { message: UIMessage
     const isSending = message.status === 'SENDING';
     const isError = message.status === 'FAILED';
 
-    console.log("member name: ", channelMembers?.[message.authorId]?.displayName);
-
     return (
 
         <>

@@ -16,25 +16,28 @@ class SocketService {
         this.client = new Client({
             brokerURL: import.meta.env.VITE_REACT_APP_SOCKET_URL || 'http://localhost:8080/ws',
             reconnectDelay: 5000,
-            // debug: (str) => {
-            //     console.log('[STOMP]: ' + str);
-            // },
         });
 
         this.client.onConnect = () => {
             this.connected = true;
-            console.log('Connected to WebSocket');
+            this.connectionListeners.forEach(cb => cb(true));
         };
 
         this.client.onDisconnect = () => {
             this.connected = false;
-            console.log('Disconnected from WebSocket');
+            console.log('Disconnected from WebSocket, brokerURL: ', this.client.brokerURL);
         };
 
         this.client.onStompError = (frame) => {
             console.error('Broker reported error: ' + frame.headers['message']);
             console.error('Additional details: ' + frame.body);
         };
+    }
+
+    private connectionListeners: ((connected: boolean) => void)[] = [];
+
+    onConnectionChange(callback: (connected: boolean) => void) {
+        this.connectionListeners.push(callback);
     }
 
     connect(token: string) {
@@ -78,10 +81,12 @@ class SocketService {
 
     // --- 2. QUẢN LÝ CHANNEL SUBSCRIPTION ---
     subscribeToChannels(channelId: string[], callback: (event: WsMessageEvent) => void) {
+        console.log("Subscribing to channels: ", channelId);
         if (!this.connected) return;
 
         this.currentChannelSubs = channelId.map((id) => {
             const destination = `${CHANNEL_TOPIC_PREFIX}${id}`;
+            console.log("destination: ", destination);
             return this.client.subscribe(`${destination}`, (message: IMessage) => {
                 if (message.body) {
                     const event = JSON.parse(message.body);

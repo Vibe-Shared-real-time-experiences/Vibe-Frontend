@@ -11,9 +11,13 @@ export interface WsUserSummary {
 }
 
 export interface WsAttachmentResponse {
-    id: string;
     url: string;
     type: string;
+    contentType: string;
+
+    width: number | null;
+    height: number | null;
+    size: number;
 }
 
 export interface WsMessageResponse {

@@ -44,9 +44,12 @@ export const messageSlice = createSlice({
                 authorId: message.authorId,
                 createdAt: message.createdAt,
                 attachments: message.attachments?.map(att => ({
-                    id: att.id,
-                    url: att.url,
+                    objectKey: att.url,
+                    contentType: att.contentType,
                     type: att.type,
+                    width: att.width,
+                    height: att.height,
+                    size: att.size,
                 })) as UIAttachment[],
                 metadata: null,
             } as UIMessage;

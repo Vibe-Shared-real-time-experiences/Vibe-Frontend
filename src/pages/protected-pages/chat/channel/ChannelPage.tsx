@@ -1,6 +1,7 @@
 import { Outlet, useParams } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../../../features/hooks';
+import { useSocketConnected } from '../../../../hooks/useSocketConnected';
 import ChannelLeftSidebar from './components/ChannelLeftSidebar';
 import { getServerById } from '../../../../features/chat/serverThunk';
 import { socketService } from '../../../../services/socketService';
@@ -10,6 +11,7 @@ import type { WsMessageEvent } from '../../../../types/socket';
 export default function ChannelPage() {
     const { serverId } = useParams();
     const dispatch = useAppDispatch();
+    const socketConnected = useSocketConnected();
 
     const { currentServerId, channelsMap } = useAppSelector((state) => state.channel);
     const currentUserId = useAppSelector((state) => state.auth.user?.id);
@@ -35,6 +37,11 @@ export default function ChannelPage() {
             ? Object.values(channelsMap).filter(channel => channel.serverId == serverId).map(channel => channel.id)
             : [];
 
+        if (!socketService.isConnected()) {
+            console.warn('Socket not connected yet, will retry');
+            return;
+        }
+
         socketService.unsubscribeCurrentChannel();
         if (channelIds.length > 0) {
             socketService.subscribeToChannels(channelIds, (event: WsMessageEvent) => {
@@ -42,6 +49,8 @@ export default function ChannelPage() {
                 if (event.eventType === 'MESSAGE_CREATED') {
 
                     console.log("Received MESSAGE_CREATED event: ", event.data);
+                    console.log("Current user ID: ", currentUserId);
+                    console.log("author: ", event.data.authorId);
 
                     if (event.data.authorId === currentUserId) {
                         return; // Ignore messages sent by current user
@@ -53,8 +62,9 @@ export default function ChannelPage() {
                     dispatch(addRealTimeMessage(event.data));
                 }
             });
+            console.log("Subscribed to channels: ", channelIds);
         }
-    }, [serverId, channelsMap, dispatch, currentUserId]);
+    }, [serverId, channelsMap, dispatch, currentUserId, socketConnected]);
 
     return (
         <div className="flex flex-1 overflow-hidden">
